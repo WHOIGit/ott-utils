@@ -46,9 +46,9 @@ class ClassSummary(object):
         if frequency is not None:
             df = df.resample(frequency).sum()
         return df
-    def concentrations(self, frequency=None):
+    def concentrations(self, frequency=None, threshold=None):
         """:param frequency: binning frequency (e.g., '1d')"""
-        cc = self.counts(frequency)
+        cc = self.counts(frequency, threshold)
         ml_analyzed = self.ml_analyzed(frequency)
         # divide counts by ml_analyzed
         return cc.div(ml_analyzed, axis=0)
