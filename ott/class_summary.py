@@ -36,7 +36,7 @@ class ClassSummary(object):
         return pd.DataFrame(class_counts, columns=class_cols, index=self.times)
     @property
     def concentrations(self):
-        cc = self.class_counts
+        cc = self.counts
         ml_analyzed = self.ml_analyzed
         # divide counts by ml_analyzed
         return cc.div(ml_analyzed, axis=0)
