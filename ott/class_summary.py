@@ -26,20 +26,31 @@ class ClassSummary(object):
         # as described in http://stackoverflow.com/questions/13785932/how-to-round-a-pandas-datetimeindex
         ts = np.round(ts.astype(np.int64),-9).astype('datetime64[ns]')
         return ts
-    def ml_analyzed(self):
+    def ml_analyzed(self, frequency=None):
+        """:param frequency: binning frequency (e.g., '1d')"""
         ml_analyzed = self.mat['ml_analyzedTB']
-        return pd.Series(ml_analyzed, index=self.times)
-    def counts(self, threshold=None):
-        """:param threshold: None, 'adhoc', or 'opt'"""
+        s = pd.Series(ml_analyzed, index=self.times)
+        if frequency is not None:
+            s = s.resample(frequency).sum()
+        return s
+    def counts(self, frequency=None, threshold=None):
+        """:param frequency: binning frequency (e.g., '1d')
+        :param threshold: None, 'adhoc', or 'opt'"""
         class_cols = self.mat['class2useTB']
         key = 'classcountTB'
         if threshold is not None:
             assert threshold in ['adhoc', 'opt'], 'threshold must be "opt" or "adhoc"'
             key = '{}_above_{}thresh'.format(key, threshold)
         class_counts = self.mat[key]
-        return pd.DataFrame(class_counts, columns=class_cols, index=self.times)
-    def concentrations(self):
-        cc = self.counts()
+        df = pd.DataFrame(class_counts, columns=class_cols, index=self.times)
+        if frequency is not None:
+            df = df.resample(frequency).sum()
+        return df
+    def concentrations(self, frequency=None):
+        """:param frequency: binning frequency (e.g., '1d')"""
+        cc = self.counts(frequency)
         ml_analyzed = self.ml_analyzed()
+        if frequency is not None:
+            ml_analyzed = ml_analyzed.resample(frequency).sum()
         # divide counts by ml_analyzed
         return cc.div(ml_analyzed, axis=0)
