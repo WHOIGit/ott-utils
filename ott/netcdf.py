@@ -47,15 +47,11 @@ def cs2netcdf(cs_path, nc_path, frequency=None, metadata=IfcbMetadata()):
                           global_attributes=g_attrs,
                           platform_attributes=p_attrs,
                           instrument_attributes=i_attrs)
-        
-class SummaryDirectory(object):
-    def __init__(self, dir='.', metadata=IfcbMetadata()):
-        self.dir = dir
-        self.metadata = metadata
-    def to_netcdf(self, out_dir='.', frequency=None):
-        for fn in os.listdir(self.dir):
-            if re.match(r'summary_allTB\d{4}\.mat',fn):
-                cs_path = os.path.join(self.dir, fn)
-                nc_fn = re.sub(r'\.mat$','.nc',fn)
-                nc_path = os.path.join(out_dir, nc_fn)
-                cs2netcdf(cs_path, nc_path, frequency, self.metadata)
+
+def csdir2netcdf(cs_dir, nc_dir, frequency=None, metadata=IfcbMetadata()):
+    for fn in os.listdir(cs_dir):
+        if re.match(r'summary_allTB\d{4}\.mat',fn):
+            cs_path = os.path.join(cs_dir, fn)
+            nc_fn = re.sub(r'\.mat$','.nc',fn)
+            nc_path = os.path.join(nc_dir, nc_fn)
+            cs2netcdf(cs_path, nc_path, frequency=frequency, metadata=metadata)
