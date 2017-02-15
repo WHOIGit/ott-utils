@@ -1,0 +1,3 @@
+[submodule "netcdf-cf-utils"]
+	path = netcdf-cf-utils
+	url = https://github.com/joefutrelle/netcdf-cf-utils
