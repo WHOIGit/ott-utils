@@ -74,5 +74,4 @@ def csdir2netcdf(cs_dir, nc_dir, frequency=None, threshold=None, metadata=IfcbMe
         fn = os.path.basename(cs_path)
         nc_fn = re.sub(r'\.mat$','.nc',fn)
         nc_path = os.path.join(nc_dir, nc_fn)
-        print cs_path, nc_path
         cs2netcdf(cs_path, nc_path, frequency=frequency, threshold=threshold, metadata=metadata)
