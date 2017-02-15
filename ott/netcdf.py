@@ -49,9 +49,9 @@ class IfcbMetadata(object):
             'long_name': self.platform_name
         }
 
-def cs2netcdf(cs_path, nc_path, frequency=None, metadata=IfcbMetadata()):
+def cs2netcdf(cs_path, nc_path, frequency=None, threshold=None, metadata=IfcbMetadata()):
     cs = ClassSummary(cs_path)
-    conc = cs.concentrations(frequency=frequency)
+    conc = cs.concentrations(frequency=frequency, threshold=threshold)
     g_attrs = metadata.get_global_attributes()
     i_attrs = metadata.get_instrument_attributes()
     p_attrs = metadata.get_platform_attributes()
@@ -64,10 +64,15 @@ def cs2netcdf(cs_path, nc_path, frequency=None, metadata=IfcbMetadata()):
                           platform_attributes=p_attrs,
                           instrument_attributes=i_attrs)
 
-def csdir2netcdf(cs_dir, nc_dir, frequency=None, metadata=IfcbMetadata()):
+def list_csdir(cs_dir):
     for fn in os.listdir(cs_dir):
         if re.match(r'summary_allTB\d{4}\.mat',fn):
-            cs_path = os.path.join(cs_dir, fn)
-            nc_fn = re.sub(r'\.mat$','.nc',fn)
-            nc_path = os.path.join(nc_dir, nc_fn)
-            cs2netcdf(cs_path, nc_path, frequency=frequency, metadata=metadata)
+            yield os.path.join(cs_dir, fn)
+    
+def csdir2netcdf(cs_dir, nc_dir, frequency=None, threshold=None, metadata=IfcbMetadata()):
+    for cs_path in list_csdir(cs_dir):
+        fn = os.path.basename(cs_path)
+        nc_fn = re.sub(r'\.mat$','.nc',fn)
+        nc_path = os.path.join(nc_dir, nc_fn)
+        print cs_path, nc_path
+        cs2netcdf(cs_path, nc_path, frequency=frequency, threshold=threshold, metadata=metadata)
