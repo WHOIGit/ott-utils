@@ -16,34 +16,50 @@ IFCB_NAME = 'Imaging FlowCytobot'
 
 MVCO_IFCB_INSTITUTION='WHOI'
 
+TITLE='Phytoplankton concentration (IFCB)'
+SUMMARY='Phytoplankton concentration by class '\
+         'derived from images collected by '\
+         'Imaging FlowCytobot'
+
 class IfcbMetadata(object):
-    def __init__(self, lat=MVCO_ASIT_LAT, lon=MVCO_ASIT_LON,
+    def __init__(self, latitude=MVCO_ASIT_LAT, longitude=MVCO_ASIT_LON,
                  depth=MVCO_IFCB_DEPTH, platform_name=MVCO_ASIT_NAME,
-                 instrument_name=IFCB_NAME, institution=MVCO_IFCB_INSTITUTION):
-        self.lat = lat
-        self.lon = lon
+                 instrument_name=IFCB_NAME, institution=MVCO_IFCB_INSTITUTION,
+                 title=TITLE, summary=SUMMARY):
+        self.latitude = latitude
+        self.longitude = longitude
         self.depth = depth
         self.platform_name = platform_name
         self.instrument_name = instrument_name
+        self.title = title
+        self.summary = summary
         self.institution = institution
+    def get_global_attributes(self):
+        return {
+            'title': self.title,
+            'summary': self.summary,
+            'institution': self.institution
+        }
+    def get_instrument_attributes(self):
+        return {
+            'long_name': self.instrument_name
+        }
+    def get_platform_attributes(self):
+        return {
+            'long_name': self.platform_name
+        }
 
 def cs2netcdf(cs_path, nc_path, frequency=None, metadata=IfcbMetadata()):
     cs = ClassSummary(cs_path)
     conc = cs.concentrations(frequency=frequency)
-    g_attrs = {
-        'title': 'Phytoplankton concentration (IFCB)',
-        'summary': 'Phytoplankton concentration by class derived from images collected by Imaging FlowCytobot',
-        'institution': metadata.institution
-    }
-    i_attrs = {
-        'long_name': metadata.instrument_name
-    }
-    p_attrs = {
-        'long_name': metadata.platform_name
-    }
+    g_attrs = metadata.get_global_attributes()
+    i_attrs = metadata.get_instrument_attributes()
+    p_attrs = metadata.get_platform_attributes()
     with nc4.Dataset(nc_path,'w') as ds:
         tw = TimeseriesWriter(ds)
-        tw.from_dataframe(conc, lat=metadata.lat, lon=metadata.lon,
+        tw.from_dataframe(conc, lat=metadata.latitude,
+                          lon=metadata.longitude,
+                          depth=metadata.depth,
                           global_attributes=g_attrs,
                           platform_attributes=p_attrs,
                           instrument_attributes=i_attrs)
