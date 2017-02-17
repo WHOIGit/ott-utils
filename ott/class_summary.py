@@ -31,7 +31,7 @@ class ClassSummary(object):
         ml_analyzed = self.mat['ml_analyzedTB']
         s = pd.Series(ml_analyzed, index=self.times)
         if frequency is not None:
-            s = s.resample(frequency, how='sum')
+            s = s.resample(frequency, how='sum').dropna()
         return s
     def counts(self, frequency=None, threshold=None):
         """:param frequency: binning frequency (e.g., '1d')
@@ -44,7 +44,7 @@ class ClassSummary(object):
         class_counts = self.mat[key]
         df = pd.DataFrame(class_counts, columns=class_cols, index=self.times)
         if frequency is not None:
-            df = df.resample(frequency, how='sum')
+            df = df.resample(frequency, how='sum').dropna()
         return df
     def concentrations(self, frequency=None, threshold=None):
         """:param frequency: binning frequency (e.g., '1d')"""
