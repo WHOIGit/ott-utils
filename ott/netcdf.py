@@ -66,7 +66,7 @@ def cs2netcdf(cs_path, nc_path, frequency=None, threshold=None, metadata=IfcbMet
 
 def list_csdir(cs_dir):
     for fn in os.listdir(cs_dir):
-        if re.match(r'summary_allTB\d{4}\.mat',fn):
+        if re.match(r'summary_allTB\d+\.mat',fn):
             yield os.path.join(cs_dir, fn)
     
 def csdir2netcdf(cs_dir, nc_dir, frequency=None, threshold=None, metadata=IfcbMetadata()):
