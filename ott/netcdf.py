@@ -3,7 +3,7 @@ import re
 
 import netCDF4 as nc4
 
-from nccf.timeseries import TimeseriesWriter
+from pocean.dsg.timeseries.om import OrthogonalMultidimensionalTimeseries
 
 from .class_summary import ClassSummary
 
@@ -34,35 +34,34 @@ class IfcbMetadata(object):
         self.title = title
         self.summary = summary
         self.institution = institution
-    def get_global_attributes(self):
+    def get_attributes(self):
         return {
-            'title': self.title,
-            'summary': self.summary,
-            'institution': self.institution
-        }
-    def get_instrument_attributes(self):
-        return {
-            'long_name': self.instrument_name
-        }
-    def get_platform_attributes(self):
-        return {
-            'long_name': self.platform_name
+            'global': {
+                'title': self.title,
+                'summary': self.summary,
+                'institution': self.institution
+            },
+            'platform': {
+                'long_name': self.platform_name
+            },
+            'instrument': {
+                'long_name': self.instrument_name
+            }
         }
 
 def cs2netcdf(cs_path, nc_path, frequency=None, threshold=None, metadata=IfcbMetadata()):
     cs = ClassSummary(cs_path)
     conc = cs.concentrations(frequency=frequency, threshold=threshold)
-    g_attrs = metadata.get_global_attributes()
-    i_attrs = metadata.get_instrument_attributes()
-    p_attrs = metadata.get_platform_attributes()
-    with nc4.Dataset(nc_path,'w') as ds:
-        tw = TimeseriesWriter(ds)
-        tw.from_dataframe(conc, lat=metadata.latitude,
-                          lon=metadata.longitude,
-                          depth=metadata.depth,
-                          global_attributes=g_attrs,
-                          platform_attributes=p_attrs,
-                          instrument_attributes=i_attrs)
+    attrs = metadata.get_attributes()
+
+    # set up dataframe for pocean
+    conc['y'] = metadata.latitude
+    conc['x'] = metadata.longitude
+    conc['z'] = metadata.depth
+    conc['t'] = conc.index
+    conc['station'] = metadata.platform_name
+    
+    OrthogonalMultidimensionalTimeseries.from_dataframe(conc, nc_path, attributes=attrs)
 
 def list_csdir(cs_dir):
     for fn in os.listdir(cs_dir):
