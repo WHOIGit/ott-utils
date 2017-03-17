@@ -6,6 +6,7 @@ import netCDF4 as nc4
 from pocean.dsg.timeseries.om import OrthogonalMultidimensionalTimeseries
 
 from .class_summary import ClassSummary
+from .erddap import generate_datasets_xml
 
 MVCO_ASIT_LAT=41.325
 MVCO_ASIT_LON=-70.5667
@@ -54,6 +55,8 @@ def cs2netcdf(cs_path, nc_path, frequency=None, threshold=None, metadata=IfcbMet
     conc = cs.concentrations(frequency=frequency, threshold=threshold)
     attrs = metadata.get_attributes()
 
+    dataset_xml = generate_datasets_xml(os.path.abspath(os.path.dirname(nc_path)), metadata, conc)
+    
     # set up dataframe for pocean
     conc['y'] = metadata.latitude
     conc['x'] = metadata.longitude
@@ -62,6 +65,8 @@ def cs2netcdf(cs_path, nc_path, frequency=None, threshold=None, metadata=IfcbMet
     conc['station'] = metadata.platform_name
     
     OrthogonalMultidimensionalTimeseries.from_dataframe(conc, nc_path, attributes=attrs)
+
+    return dataset_xml
 
 def list_csdir(cs_dir):
     for fn in os.listdir(cs_dir):
@@ -73,4 +78,6 @@ def csdir2netcdf(cs_dir, nc_dir, frequency=None, threshold=None, metadata=IfcbMe
         fn = os.path.basename(cs_path)
         nc_fn = re.sub(r'\.mat$','.nc',fn)
         nc_path = os.path.join(nc_dir, nc_fn)
-        cs2netcdf(cs_path, nc_path, frequency=frequency, threshold=threshold, metadata=metadata)
+        ds_xml = cs2netcdf(cs_path, nc_path, frequency=frequency, threshold=threshold, metadata=metadata)
+        with open(os.path.join(nc_dir,'dataset.xml'),'w') as fout:
+            fout.write(ds_xml)
