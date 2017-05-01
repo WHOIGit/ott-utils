@@ -4,8 +4,6 @@ import os
 import yaml
 from munch import munchify
 
-sys.path.append('netcdf-cf-utils')
-
 from ott.netcdf import IfcbMetadata, csdir2netcdf
 
 # constants

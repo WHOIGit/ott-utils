@@ -3,9 +3,10 @@ import re
 
 import netCDF4 as nc4
 
-from nccf.timeseries import TimeseriesWriter
+from pocean.dsg.timeseries.om import OrthogonalMultidimensionalTimeseries
 
 from .class_summary import ClassSummary
+from .erddap import generate_datasets_xml
 
 MVCO_ASIT_LAT=41.325
 MVCO_ASIT_LON=-70.5667
@@ -34,35 +35,38 @@ class IfcbMetadata(object):
         self.title = title
         self.summary = summary
         self.institution = institution
-    def get_global_attributes(self):
+    def get_attributes(self):
         return {
-            'title': self.title,
-            'summary': self.summary,
-            'institution': self.institution
-        }
-    def get_instrument_attributes(self):
-        return {
-            'long_name': self.instrument_name
-        }
-    def get_platform_attributes(self):
-        return {
-            'long_name': self.platform_name
+            'global': {
+                'title': self.title,
+                'summary': self.summary,
+                'institution': self.institution
+            },
+            'platform': {
+                'long_name': self.platform_name
+            },
+            'instrument': {
+                'long_name': self.instrument_name
+            }
         }
 
 def cs2netcdf(cs_path, nc_path, frequency=None, threshold=None, metadata=IfcbMetadata()):
     cs = ClassSummary(cs_path)
     conc = cs.concentrations(frequency=frequency, threshold=threshold)
-    g_attrs = metadata.get_global_attributes()
-    i_attrs = metadata.get_instrument_attributes()
-    p_attrs = metadata.get_platform_attributes()
-    with nc4.Dataset(nc_path,'w') as ds:
-        tw = TimeseriesWriter(ds)
-        tw.from_dataframe(conc, lat=metadata.latitude,
-                          lon=metadata.longitude,
-                          depth=metadata.depth,
-                          global_attributes=g_attrs,
-                          platform_attributes=p_attrs,
-                          instrument_attributes=i_attrs)
+    attrs = metadata.get_attributes()
+
+    dataset_xml = generate_datasets_xml(os.path.abspath(os.path.dirname(nc_path)), metadata, conc)
+    
+    # set up dataframe for pocean
+    conc['y'] = metadata.latitude
+    conc['x'] = metadata.longitude
+    conc['z'] = metadata.depth
+    conc['t'] = conc.index
+    conc['station'] = metadata.platform_name
+    
+    OrthogonalMultidimensionalTimeseries.from_dataframe(conc, nc_path, attributes=attrs)
+
+    return dataset_xml
 
 def list_csdir(cs_dir):
     for fn in os.listdir(cs_dir):
@@ -74,4 +78,6 @@ def csdir2netcdf(cs_dir, nc_dir, frequency=None, threshold=None, metadata=IfcbMe
         fn = os.path.basename(cs_path)
         nc_fn = re.sub(r'\.mat$','.nc',fn)
         nc_path = os.path.join(nc_dir, nc_fn)
-        cs2netcdf(cs_path, nc_path, frequency=frequency, threshold=threshold, metadata=metadata)
+        ds_xml = cs2netcdf(cs_path, nc_path, frequency=frequency, threshold=threshold, metadata=metadata)
+        with open(os.path.join(nc_dir,'dataset.xml'),'w') as fout:
+            fout.write(ds_xml)
