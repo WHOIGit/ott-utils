@@ -1,0 +1,23 @@
+name: ott-utils
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python>=3.5
+  - scipy
+  - pytz
+  - python-dateutil
+  - netcdf4
+  - pandas
+  - pygc
+  - simplejson
+  - shapely
+  - PyYAML
+  - munch
+  - jinja2
+  - pocean-core
+  - h5py
+  - requests
+  - Pillow
+  - pip:
+    - git+https://github.com/joefutrelle/pyifcb
