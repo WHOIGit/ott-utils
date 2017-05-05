@@ -49,8 +49,10 @@ def split_column(df, colname, names):
     df.pop(colname)
     return df
 
+CLASS_GLOB = '*_class_v1.mat'
+
 def get_opt_thresh(class_dir, classifier_dir):
-    class_path = list(glob(os.path.join(class_dir,'*_class_v1.mat')))[0]
+    class_path = list(glob(os.path.join(class_dir, CLASS_GLOB)))[0]
     classfile = loadmat(class_path, squeeze_me=True)
     cname = classfile['classifierName']
     classifier_path = os.path.join(classifier_dir,'{}.mat'.format(cname))
@@ -65,7 +67,7 @@ def summarize_counts(the_dir, thresh, log_callback=None):
     lids = []
     counts = []
 
-    for path in glob(os.path.join(the_dir,'*_class_v1.mat')):
+    for path in glob(os.path.join(the_dir, CLASS_GLOB)):
         pid = Pid(path)
         if log_callback is not None:
             log_callback('{} {}'.format(pid.timestamp, pid.lid))
