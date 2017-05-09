@@ -27,10 +27,18 @@ def compute_ml_analyzed_s1_adc(adc):
 	frame_grab_time = adc[s.FRAME_GRAB_TIME] + neg_adj
 	trigger_open_time = adc[s.TRIGGER_OPEN_TIME] + neg_adj
 	# done with that case
+	# run time is assumed to be final frame grab time
 	run_time = frame_grab_time.iloc[-1]
+	# proc time is time between trigger open time and previous
+	# frame grab time
 	proc_time = np.array(trigger_open_time.iloc[1:]) - np.array(frame_grab_time[:-1])
+	# set all proc times that are less than min to min
 	proc_time[proc_time < MIN_PROC_TIME] = MIN_PROC_TIME
-	look_time = run_time - proc_time.sum()
+	# look time is run time - proc time
+	# not sure why subtracting MIN_PROC_TIME here is necessary
+	# to match output from MATLAB code, that code may have a bug
+	look_time = run_time - proc_time.sum() - MIN_PROC_TIME
+	# ml analyzed is look time times flow rate
 	ml_analyzed = look_time * FLOW_RATE
 	return ml_analyzed, look_time, run_time
 
@@ -39,6 +47,7 @@ def compute_ml_analyzed_s1(abin):
 
 def compute_ml_analyzed_s2(abin):
 	FLOW_RATE = 0.25 # ml/minute
+	# ml analyzed is (run time - inhibit time) * flow rate
 	run_time = abin.headers['runTime']
 	inhibit_time = abin.headers['inhibitTime']
 	look_time = run_time - inhibit_time
