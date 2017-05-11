@@ -31,6 +31,7 @@ def compute_ml_analyzed_s1_adc(adc):
     # that need to have 24 hours added to them
     neg_adj = (adc[s.FRAME_GRAB_TIME] < 0) * 24*60*60.
     frame_grab_time = adc[s.FRAME_GRAB_TIME] + neg_adj
+    neg_adj = (adc[s.TRIGGER_OPEN_TIME] < 0) * 24*60*60.
     trigger_open_time = adc[s.TRIGGER_OPEN_TIME] + neg_adj
     # done with that case
     # run time is assumed to be final frame grab time
