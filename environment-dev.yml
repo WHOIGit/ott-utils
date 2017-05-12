@@ -1,0 +1,27 @@
+# To use this for development, run the following
+# conda env create -f environment-dev.yml
+# source activate ott-utils-dev
+# git clone https://github.com/joefutrelle/pyifcb
+# cd pyifcb
+# python setup.py develop
+name: ott-utils-dev
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python>=3.5
+  - scipy
+  - pytz
+  - python-dateutil
+  - netcdf4
+  - pandas
+  - pygc
+  - simplejson
+  - shapely
+  - PyYAML
+  - munch
+  - jinja2
+  - pocean-core
+  - h5py
+  - requests
+  - Pillow
