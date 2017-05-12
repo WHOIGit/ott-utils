@@ -48,10 +48,13 @@ class ClassScores(object):
         class_counts = [counts.get(k,0) for k in self.class2use]
         return class_counts
 
+def find_class_files(class_dir):
+    return glob(os.path.join(class_dir, CLASS_GLOB))
+
 def get_opt_thresh(class_dir, classifier_dir):
     try:
         # pick the first one, because it doesn't matter which one we pick
-        class_path = list(glob(os.path.join(class_dir, CLASS_GLOB)))[0]
+        class_path = list(find_class_files(class_dir))[0]
     except IndexError:
         raise FileNotFoundError('no class score files found in {}'.format(class_dir))
     classfile = loadmat_validate(class_path, CLASSIFIER_NAME, CLASS2USE)
@@ -63,14 +66,14 @@ def get_opt_thresh(class_dir, classifier_dir):
     opt_thresh = {k: thresholds[k] for k in class2useTB if k != UNCLASSIFIED}
     return opt_thresh
 
-def summarize_counts(the_dir, thresh, log_callback=None):
+def summarize_counts(class_dir, thresh, log_callback=None):
     """summarize class counts for an entire directory of
     class scores files and return as a pandas dataframe"""
     timestamps = []
     lids = []
     counts = []
 
-    for path in glob(os.path.join(the_dir, CLASS_GLOB)):
+    for path in sorted(find_class_files(class_dir)):
         pid = Pid(path)
         if log_callback is not None:
             log_callback('{} {}'.format(pid.timestamp, pid.lid))
