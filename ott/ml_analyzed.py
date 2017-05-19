@@ -2,8 +2,6 @@ from scipy.io import loadmat
 import numpy as np
 import pandas as pd
 
-from pandas.errors import EmptyDataError
-
 from ifcb.data.adc import SCHEMA_VERSION_1, SCHEMA_VERSION_2
 
 def read_ml_analyzed(path):

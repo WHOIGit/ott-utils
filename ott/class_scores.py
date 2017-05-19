@@ -66,14 +66,14 @@ def get_opt_thresh(class_dir, classifier_dir):
     opt_thresh = {k: thresholds[k] for k in class2useTB if k != UNCLASSIFIED}
     return opt_thresh
 
-def summarize_counts(class_dir, thresh, log_callback=None):
+def summarize_counts(the_dir, thresh, log_callback=None):
     """summarize class counts for an entire directory of
     class scores files and return as a pandas dataframe"""
     timestamps = []
     lids = []
     counts = []
 
-    for path in sorted(find_class_files(class_dir)):
+    for path in sorted(find_class_files(the_dir)):
         pid = Pid(path)
         if log_callback is not None:
             log_callback('{} {}'.format(pid.timestamp, pid.lid))
