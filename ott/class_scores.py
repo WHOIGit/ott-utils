@@ -15,6 +15,11 @@ CLASSIFIER_NAME = 'classifierName'
 OPT_THRESHOLDS = 'maxthre'
 CLASSES = 'classes'
 
+THRESHOLDS = 'thresholds'
+TIMESTAMPS = 'timestamps'
+LIDS = 'lids'
+COUNTS = 'counts'
+
 CLASS_GLOB = '*_class_v1.mat'
 
 class ClassScores(object):
@@ -67,8 +72,28 @@ def get_opt_thresh(class_dir, classifier_dir):
     return opt_thresh
 
 def summarize_counts(the_dir, thresh, log_callback=None):
-    """summarize class counts for an entire directory of
-    class scores files and return as a pandas dataframe"""
+    """
+    :param thresh dict of thresh by class name
+
+    summarize class counts for an entire directory of
+    class scores files and return as a json data structure:
+        {
+            "classes": ["class1", "class2", ...],
+            "thresholds": {
+                "class1": t1,
+                "class2": t2,
+                ...
+            }
+            "lids": [lid1, lid2, lid3, ...], # per file
+            "timestamps": [ts1, ts2, ts3 ...], # per file
+            "counts": {
+                "class1": [c1, c2, c3 ...], # for class 0 per file
+                "class2": [c1, c2, c3 ...], # for class 1 per file
+                ...
+            }
+        }
+    """
+    classes = []
     timestamps = []
     lids = []
     counts = []
@@ -77,23 +102,32 @@ def summarize_counts(the_dir, thresh, log_callback=None):
         pid = Pid(path)
         if log_callback is not None:
             log_callback('{} {}'.format(pid.timestamp, pid.lid))
-        timestamps.append(pid.timestamp)
+        timestamps.append('{}'.format(pid.timestamp))
         lids.append(pid.lid)
         scores = ClassScores(path)
-        class2use = scores.class2use
+        classes = scores.class2use
+        if not counts:
+            counts = { k: [] for k in classes }
         class_counts = scores.class_counts(thresh)
-        counts.append(class_counts)
+        for i, k in enumerate(classes):
+            counts[k].append(int(class_counts[i]))
 
-    df = pd.DataFrame({
-        'lid': lids,
-        'counts': counts
-    },index=timestamps)
+    out = {
+        THRESHOLDS: thresh,
+        CLASSES: list(classes),
+        LIDS: lids,
+        TIMESTAMPS: timestamps,
+        COUNTS: counts
+    }
 
-    df = split_column(df,'counts',class2use)
+    return out
 
-    return df
+def counts2df(counts):
+    """consumes data structure produced by summarize_counts
+    and produces a Pandas dataframe with one column per class,
+    indexed by timestamp"""
+    timestamps = [pd.to_datetime(ts) for ts in counts[TIMESTAMPS]]
+    classes = counts[CLASSES]
+    counts = counts[COUNTS]
 
-def summary2mat(df):
-    """convert the results of summarize_counts to a class summary
-    matlab file that can be consumed by ClassSummary"""
-    pass
+    return pd.DataFrame(counts, columns=classes, index=timestamps)
