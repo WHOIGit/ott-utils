@@ -105,7 +105,8 @@ def summarize_counts(the_dir, thresh, log_callback=None):
         timestamps.append('{}'.format(pid.timestamp))
         lids.append(pid.lid)
         scores = ClassScores(path)
-        classes = scores.class2use
+        if not classes:
+            classes = list(scores.class2use)
         if not counts:
             counts = { k: [] for k in classes }
         class_counts = scores.class_counts(thresh)
@@ -114,7 +115,7 @@ def summarize_counts(the_dir, thresh, log_callback=None):
 
     out = {
         THRESHOLDS: thresh,
-        CLASSES: list(classes),
+        CLASSES: classes,
         LIDS: lids,
         TIMESTAMPS: timestamps,
         COUNTS: counts
