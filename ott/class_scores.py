@@ -10,6 +10,8 @@ from ifcb.data.identifiers import Pid
 from .common import loadmat_validate, split_column
 from .common import CLASS2USE, UNCLASSIFIED
 
+from .ml_analyzed import ML_ANALYZED
+
 SCORES = 'TBscores'
 CLASSIFIER_NAME = 'classifierName'
 OPT_THRESHOLDS = 'maxthre'
@@ -58,17 +60,19 @@ def find_class_files(class_dir):
 
 def get_opt_thresh(class_dir, classifier_dir):
     try:
-        # pick the first one, because it doesn't matter which one we pick
+        # arbitrarily pick the first one, all should use the same classifier
         class_path = list(find_class_files(class_dir))[0]
     except IndexError:
         raise FileNotFoundError('no class score files found in {}'.format(class_dir))
     classfile = loadmat_validate(class_path, CLASSIFIER_NAME, CLASS2USE)
     cname = classfile[CLASSIFIER_NAME]
     classifier_path = os.path.join(classifier_dir,'{}.mat'.format(cname))
+    if not os.path.exists(classifier_path):
+        raise FileNotFoundError('classifier file {} does not exist'.format(classifier_path))
     classifier = loadmat_validate(classifier_path, CLASSES, OPT_THRESHOLDS)
     thresholds = dict(zip(classifier[CLASSES], classifier[OPT_THRESHOLDS]))
     class2useTB = classfile[CLASS2USE]
-    opt_thresh = {k: thresholds[k] for k in class2useTB if k != UNCLASSIFIED}
+    opt_thresh = { k: thresholds[k] for k in class2useTB if k != UNCLASSIFIED }
     return opt_thresh
 
 def summarize_counts(the_dir, thresh, log_callback=None):
@@ -76,27 +80,28 @@ def summarize_counts(the_dir, thresh, log_callback=None):
     :param thresh dict of thresh by class name
 
     summarize class counts for an entire directory of
-    class scores files and return as a json data structure:
+    class scores files and return as a json-serializable
+    dict:
         {
-            "classes": ["class1", "class2", ...],
-            "thresholds": {
+            CLASSES: ["class1", "class2", ...],
+            THRESHOLDS: {
                 "class1": t1,
                 "class2": t2,
                 ...
             }
-            "lids": [lid1, lid2, lid3, ...], # per file
-            "timestamps": [ts1, ts2, ts3 ...], # per file
-            "counts": {
-                "class1": [c1, c2, c3 ...], # for class 0 per file
-                "class2": [c1, c2, c3 ...], # for class 1 per file
+            LIDS: [lid1, lid2, lid3 ...],
+            TIMESTAMPS: [ts1, ts2, ts3 ...], # per timestep
+            COUNTS: {
+                "class1": [c1, c2, c3 ...], # for class 1 per time
+                "class2": [c1, c2, c3 ...], # for class 2 per time
                 ...
             }
         }
     """
     classes = []
     timestamps = []
-    lids = []
     counts = []
+    lids = []
 
     for path in sorted(find_class_files(the_dir)):
         pid = Pid(path)
@@ -115,13 +120,21 @@ def summarize_counts(the_dir, thresh, log_callback=None):
 
     out = {
         THRESHOLDS: thresh,
-        CLASSES: classes,
         LIDS: lids,
+        CLASSES: classes,
         TIMESTAMPS: timestamps,
         COUNTS: counts
     }
 
     return out
+
+def merge_ml_analyzed(count_summary, ml_analyzed_summary):
+    """consumes the output of summarize_counts and summarize_ml_analyzed
+    into a merged structure that is the same as the count summary except
+    with an additional ml_analyzed field. modifies count_summary in place"""
+    mad = dict(zip(ml_analyzed_summary[LIDS], ml_analyzed_summary[ML_ANALYZED]))
+    ma = [ mad.get(k,0) for k in count_summary[LIDS] ]
+    count_summary[ML_ANALYZED] = ma
 
 def counts2df(counts):
     """consumes data structure produced by summarize_counts
@@ -132,3 +145,27 @@ def counts2df(counts):
     counts = counts[COUNTS]
 
     return pd.DataFrame(counts, columns=classes, index=timestamps)
+
+def df2counts(df):
+    """consumes a DataFrame with class counts and produces a
+    json-serializable dict:
+    {
+        CLASSES: [class1, class2, ...],
+        TIMESTAMPS: [ts1, ts2, ...],
+        COUNTS: {
+            "class1": [c1, c2, c3, ...],
+            "class2": [c1, c2, c3, ...]
+            ...
+        }
+    }
+    """
+    classes = df.columns
+    timestamps = ['{}'.format(ts) for ts in df.index]
+    counts = {}
+    for k in classes:
+        counts[k] = list(df[k])
+    return {
+        CLASSES: classes,
+        TIMESTAMPS: timestamps,
+        COUNTS: counts
+    }

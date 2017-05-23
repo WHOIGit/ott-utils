@@ -4,6 +4,13 @@ import pandas as pd
 
 from ifcb.data.adc import SCHEMA_VERSION_1, SCHEMA_VERSION_2
 
+ML_ANALYZED = 'ml_analyzed'
+CLASSES = 'classes'
+LIDS = 'lids'
+TIMESTAMPS = 'timestamps'
+LOOK_TIME = 'look_time'
+RUN_TIME = 'run_time'
+
 def read_ml_analyzed(path):
     mat = loadmat(path, squeeze_me=True)
     # ignore variables other than the following
@@ -66,3 +73,56 @@ def compute_ml_analyzed(abin):
         return compute_ml_analyzed_s1(abin)
     elif s is SCHEMA_VERSION_2:
         return compute_ml_analyzed_s2(abin)
+
+def summarize_ml_analyzed(data_dir, log_callback=None):
+    """summarize ml_analyzed for an entire data dir.
+    data_dir is any iterable of bins.
+    result is a JSON-serializable dict:
+    {
+        LIDS: [lid1, lid2 ...],
+        TIMESTAMPS: [ts1, ts2, ...],
+        ML_ANALYZED: [ma1, ma2, ...]
+        LOOK_TIME: [lt1, lt2 ...]
+        RUN_TIME: [rt1, rt2 ...]
+    }
+    """
+    lids = []
+    timestamps = []
+    ml_analyzed = []
+    look_time = []
+    run_time = []
+
+    for b in data_dir:
+        lids.append(b.lid)
+        timestamps.append('{}'.format(b.timestamp))
+        ma, lt, rt = compute_ml_analyzed(b)
+        if log_callback is not None:
+            log_callback('{} {:.3f}'.format(b.lid, ma))
+        ml_analyzed.append(ma)
+        look_time.append(lt)
+        run_time.append(rt)
+
+    return {
+        LIDS: lids,
+        TIMESTAMPS: timestamps,
+        ML_ANALYZED: ml_analyzed,
+        LOOK_TIME: look_time,
+        RUN_TIME: run_time
+    }
+
+def ml_analyzed2df(js):
+    """given the output of summarize_ml_analyzed, return
+    a dataframe indexed by timestamp"""
+    timestamps = [pd.to_datetime(ts) for ts in js[TIMESTAMPS]]
+    data = {
+        'lid': js[LIDS],
+        ML_ANALYZED: js[ML_ANALYZED],
+        LOOK_TIME: js[LOOK_TIME],
+        RUN_TIME: js[RUN_TIME]
+    }
+    return pd.DataFrame(data, index=timestamps)
+
+def ml_analyzed2dict(js):
+    """given the output of summarize_ml_analyzed, return
+    a dict keyed by lid with ml_analyzed as values"""
+    return dict(zip(js[LIDS],js[ML_ANALYZED]))
