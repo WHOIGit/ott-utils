@@ -1,6 +1,6 @@
 import os
 from glob import glob
-
+import json 
 import pandas as pd
 import numpy as np
 from scipy.io import loadmat
@@ -135,37 +135,3 @@ def merge_ml_analyzed(count_summary, ml_analyzed_summary):
     mad = dict(zip(ml_analyzed_summary[LIDS], ml_analyzed_summary[ML_ANALYZED]))
     ma = [ mad.get(k,0) for k in count_summary[LIDS] ]
     count_summary[ML_ANALYZED] = ma
-
-def counts2df(counts):
-    """consumes data structure produced by summarize_counts
-    and produces a Pandas dataframe with one column per class,
-    indexed by timestamp"""
-    timestamps = [pd.to_datetime(ts) for ts in counts[TIMESTAMPS]]
-    classes = counts[CLASSES]
-    counts = counts[COUNTS]
-
-    return pd.DataFrame(counts, columns=classes, index=timestamps)
-
-def df2counts(df):
-    """consumes a DataFrame with class counts and produces a
-    json-serializable dict:
-    {
-        CLASSES: [class1, class2, ...],
-        TIMESTAMPS: [ts1, ts2, ...],
-        COUNTS: {
-            "class1": [c1, c2, c3, ...],
-            "class2": [c1, c2, c3, ...]
-            ...
-        }
-    }
-    """
-    classes = df.columns
-    timestamps = ['{}'.format(ts) for ts in df.index]
-    counts = {}
-    for k in classes:
-        counts[k] = list(df[k])
-    return {
-        CLASSES: classes,
-        TIMESTAMPS: timestamps,
-        COUNTS: counts
-    }
