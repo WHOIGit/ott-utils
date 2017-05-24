@@ -10,3 +10,4 @@ shapely
 PyYAML
 munch
 jinja2
+pocean-core
