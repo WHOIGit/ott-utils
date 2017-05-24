@@ -3,7 +3,7 @@ import json
 import pandas as pd
 
 from .ml_analyzed import ML_ANALYZED
-from .class_scores import TIMESTAMPS, CLASSES, COUNTS
+from .class_scores import TIMESTAMPS, CLASSES, COUNTS, THRESHOLDS
 
 def ml_analyzed2series(counts):
     """requires ml_analyzed to be merged into count summary
@@ -60,6 +60,9 @@ class ClassSummary(object):
         produced by summarize_counts"""
         with open(cs_file) as fin:
             self.json = json.load(fin)
+    @property
+    def thresholds(self):
+        return self.json[THRESHOLDS]
     def counts(self, frequency=None):
         counts = counts2df(self.json)
         if frequency is not None:
