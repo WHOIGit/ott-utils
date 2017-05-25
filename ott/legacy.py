@@ -5,6 +5,7 @@ from .common import loadmat_validate, datenum2datetime
 from .common import CLASS2USE, UNCLASSIFIED
 from .ml_analyzed import ML_ANALYZED
 from .class_scores import TIMESTAMPS, CLASSES, COUNTS, THRESHOLDS, LIDS
+from .class_summary import ClassSummary
 
 FILELIST = 'filelistTB'
 MDATE = 'mdateTB'
@@ -29,13 +30,18 @@ class MatClassSummary(object):
     def get_thresholds(self, thresh=None):
         """param thresh = None, 'adhoc', or 'opt'"""
         validate_thresh(thresh)
-        classes = self.get_classes()
         if thresh == 'adhoc':
-            aht = list(self.mat['adhocthresh'])
-            return { THRESHOLDS: dict(zip(classes, aht)) }
+            return list(self.mat['adhocthresh'])
         else:
             # unable to determine thresholds
+            return None
+    def _get_thresholds_dict(self, thresh=None):
+        t = self.get_thresholds(thresh)
+        if t is None:
             return { }
+        else:
+            classes = self.get_classes()
+            return { THRESHOLDS: dict(zip(classes, t)) }
     def get_classes(self):
         return list(self.mat[CLASS2USE])
     def get_counts(self, thresh=None):
@@ -66,6 +72,18 @@ class MatClassSummary(object):
             COUNTS: counts,
             ML_ANALYZED: ml_analyzed
         }
-        out.update(self.get_thresholds(thresh))
+        out.update(self._get_thresholds_dict(thresh))
 
         return out
+    def to_class_summary(self, thresh=None):
+        return ClassSummary(json_data=self.to_json(thresh=thresh))
+
+def read_ml_analyzed(path):
+    # read a legacy ml_analyzed mat file
+    # ignore variables other than the following
+    cols = ['filelist_all', 'looktime', 'minproctime', 'ml_analyzed', 'runtime']
+    mat = loadmat_validate(path, *cols)
+    # convert to dataframe
+    df = pd.DataFrame({ c: mat[c] for c in cols }, columns=cols)
+    df.index = df.pop('filelist_all') # index by bin LID
+    return df

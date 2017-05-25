@@ -5,17 +5,20 @@ import pandas as pd
 from .ml_analyzed import ML_ANALYZED
 from .class_scores import TIMESTAMPS, CLASSES, COUNTS, THRESHOLDS
 
+def get_timestamps(counts):
+    return [ pd.to_datetime(ts) for ts in counts[TIMESTAMPS] ]
+
 def ml_analyzed2series(counts):
     """requires ml_analyzed to be merged into count summary
     using merge_ml_analyzed"""
-    timestamps = [pd.to_datetime(ts) for ts in counts[TIMESTAMPS]]   
+    timestamps = get_timestamps(counts)
     return pd.Series(counts[ML_ANALYZED], index=timestamps)
 
 def counts2df(counts):
     """consumes data structure produced by summarize_counts
     and produces a Pandas dataframe with one column per class,
     indexed by timestamp"""
-    timestamps = [pd.to_datetime(ts) for ts in counts[TIMESTAMPS]]
+    timestamps = get_timestamps(counts)
     classes = counts[CLASSES]
     counts = counts[COUNTS]
 
@@ -55,14 +58,23 @@ def concentrations(count_summary, frequency=None):
     return counts.div(ma, axis=0)
 
 class ClassSummary(object):
-    def __init__(self, cs_file):
-        """:param cs_file: json class summary file
+    def __init__(self, file=None, json_data=None):
+        """:param file: json class summary file
         produced by summarize_counts"""
-        with open(cs_file) as fin:
-            self.json = json.load(fin)
+        if file is not None:
+            with open(cs_file) as fin:
+                self.json = json.load(fin)
+        elif json_data is not None:
+            self.json = json_data
+        else:
+            raise ValueError('missing data argument')
     @property
     def thresholds(self):
+        if THRESHOLDS not in self.json:
+            raise ValueError('missing thresholds')
         return self.json[THRESHOLDS]
+    def timestamps(self):
+        return get_timestamps(self.json)
     def counts(self, frequency=None):
         counts = counts2df(self.json)
         if frequency is not None:

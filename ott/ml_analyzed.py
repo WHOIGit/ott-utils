@@ -11,15 +11,6 @@ TIMESTAMPS = 'timestamps'
 LOOK_TIME = 'look_time'
 RUN_TIME = 'run_time'
 
-def read_ml_analyzed(path):
-    mat = loadmat(path, squeeze_me=True)
-    # ignore variables other than the following
-    cols = ['filelist_all', 'looktime', 'minproctime', 'ml_analyzed', 'runtime']
-    # convert to dataframe
-    df = pd.DataFrame({ c: mat[c] for c in cols }, columns=cols)
-    df.index = df.pop('filelist_all') # index by bin LID
-    return df
-
 def compute_ml_analyzed_s1_adc(adc):
     # first, make sure this isn't an empty bin
     if len(adc) == 0:
