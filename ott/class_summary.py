@@ -5,14 +5,14 @@ import pandas as pd
 from .ml_analyzed import ML_ANALYZED
 from .class_scores import TIMESTAMPS, CLASSES, COUNTS, THRESHOLDS
 
-def get_timestamps(counts):
-    return [ pd.to_datetime(ts) for ts in counts[TIMESTAMPS] ]
+def parse_timestamps(str_timestamps):
+    return [ pd.to_datetime(ts) for ts in str_timestamps ]
 
 def ml_analyzed2series(counts, timestamps=None):
     """requires ml_analyzed to be merged into count summary
     using merge_ml_analyzed"""
     if timestamps is None:
-        timestamps = get_timestamps(counts)
+        timestamps = parse_timestamps(counts[TIMESTAMPS])
     return pd.Series(counts[ML_ANALYZED], index=timestamps)
 
 def counts2df(counts, timestamps=None):
@@ -20,7 +20,7 @@ def counts2df(counts, timestamps=None):
     and produces a Pandas dataframe with one column per class,
     indexed by timestamp"""
     if timestamps is None:
-        timestamps = get_timestamps(counts)
+        timestamps = parse_timestamps(counts[TIMESTAMPS])
     classes = counts[CLASSES]
     counts = counts[COUNTS]
 
@@ -78,7 +78,7 @@ class ClassSummary(object):
         return self.json[THRESHOLDS]
     def timestamps(self):
         if self._timestamps is None:
-            self._timestamps = get_timestamps(self.json)
+            self._timestamps = parse_timestamps(self.json[TIMESTAMPS])
         return self._timestamps
     def counts(self, frequency=None):
         counts = counts2df(self.json, timestamps=self.timestamps())
