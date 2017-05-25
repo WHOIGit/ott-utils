@@ -55,17 +55,16 @@ class IfcbMetadata(object):
             }
         }
 
-def cs2netcdf(cs_path, nc_path, frequency=None, threshold=None, metadata=IfcbMetadata()):
+def cs2netcdf(cs_path, nc_path, frequency=None, metadata=IfcbMetadata()):
     """Convert a class summary to netcdf
-    :param cs_path: path of class summary mat file
+    :param cs_path: path of class summary json file
     :param nc_path: path of output .nc file
     :param frequency: binning frequency for concentrations (None for no binning)
-    :param threshold: what kind of threshold to use (None, 'opt', 'adhoc')
     :param metadata: metadata attributes (default will use hardcoded WHOI/MVCO values)
     :returns a datasets.xml snippet for ERDDAP
     """
     cs = ClassSummary(cs_path)
-    conc = cs.concentrations(frequency=frequency, threshold=threshold)
+    conc = cs.concentrations(frequency=frequency)
     attrs = metadata.get_attributes()
 
     dataset_xml = generate_datasets_xml(os.path.abspath(os.path.dirname(nc_path)), metadata, conc)
