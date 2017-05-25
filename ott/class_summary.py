@@ -2,7 +2,7 @@ import json
 
 import pandas as pd
 
-from .common import parse_timestamps
+from .common import parse_timestamps, unparse_timestamps
 from .ml_analyzed import ML_ANALYZED
 from .class_scores import TIMESTAMPS, CLASSES, COUNTS, THRESHOLDS
 
@@ -38,7 +38,7 @@ def df2counts(df):
     }
     """
     classes = df.columns
-    timestamps = ['{}'.format(ts) for ts in df.index]
+    timestamps = unparse_timestamps(df.index)
     counts = {}
     for k in classes:
         counts[k] = list(df[k])

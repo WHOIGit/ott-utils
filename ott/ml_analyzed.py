@@ -2,6 +2,8 @@ from scipy.io import loadmat
 import numpy as np
 import pandas as pd
 
+from .common import parse_timestamps
+
 from ifcb.data.adc import SCHEMA_VERSION_1, SCHEMA_VERSION_2
 
 ML_ANALYZED = 'ml_analyzed'
@@ -104,7 +106,7 @@ def summarize_ml_analyzed(data_dir, log_callback=None):
 def ml_analyzed2df(js):
     """given the output of summarize_ml_analyzed, return
     a dataframe indexed by timestamp"""
-    timestamps = [pd.to_datetime(ts) for ts in js[TIMESTAMPS]]
+    timestamps = parse_timestamps(js[TIMESTAMPS])
     data = {
         'lid': js[LIDS],
         ML_ANALYZED: js[ML_ANALYZED],

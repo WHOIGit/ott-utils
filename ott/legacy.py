@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-from .common import loadmat_validate, datenum2datetime
+from .common import loadmat_validate, datenum2datetime, unparse_timestamps
 from .common import CLASS2USE, UNCLASSIFIED
 from .ml_analyzed import ML_ANALYZED
 from .class_scores import TIMESTAMPS, CLASSES, COUNTS, THRESHOLDS, LIDS
@@ -61,7 +61,7 @@ class MatClassSummary(object):
         with what is used by ClassSummary. thresh = None, 'adhoc', or 'opt'"""
         classes = self.get_classes()
         lids = list(self.mat[FILELIST])
-        timestamps = [ '{}'.format(ts) for ts in self.get_timestamps() ]
+        timestamps = unparse_timestamps(self.get_timestamps())
         counts = self.get_counts(thresh)
         ml_analyzed = self.get_ml_analyzed()
 

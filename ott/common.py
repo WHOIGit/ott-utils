@@ -43,3 +43,6 @@ def split_column(df, colname, names):
 
 def parse_timestamps(str_timestamps):
     return [ pd.to_datetime(ts) for ts in str_timestamps ]
+
+def unparse_timestamps(datetimes):
+    return [ '{}'.format(ts) for ts in datetimes ]
