@@ -62,7 +62,7 @@ class ClassSummary(object):
         """:param file: json class summary file
         produced by summarize_counts"""
         if file is not None:
-            with open(cs_file) as fin:
+            with open(file) as fin:
                 self.json = json.load(fin)
         elif json_data is not None:
             self.json = json_data
