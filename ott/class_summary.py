@@ -8,17 +8,19 @@ from .class_scores import TIMESTAMPS, CLASSES, COUNTS, THRESHOLDS
 def get_timestamps(counts):
     return [ pd.to_datetime(ts) for ts in counts[TIMESTAMPS] ]
 
-def ml_analyzed2series(counts):
+def ml_analyzed2series(counts, timestamps=None):
     """requires ml_analyzed to be merged into count summary
     using merge_ml_analyzed"""
-    timestamps = get_timestamps(counts)
+    if timestamps is None:
+        timestamps = get_timestamps(counts)
     return pd.Series(counts[ML_ANALYZED], index=timestamps)
 
-def counts2df(counts):
+def counts2df(counts, timestamps=None):
     """consumes data structure produced by summarize_counts
     and produces a Pandas dataframe with one column per class,
     indexed by timestamp"""
-    timestamps = get_timestamps(counts)
+    if timestamps is None:
+        timestamps = get_timestamps(counts)
     classes = counts[CLASSES]
     counts = counts[COUNTS]
 
@@ -68,22 +70,25 @@ class ClassSummary(object):
             self.json = json_data
         else:
             raise ValueError('missing data argument')
+        self._timestamps = None
     @property
     def thresholds(self):
         if THRESHOLDS not in self.json:
             raise ValueError('missing thresholds')
         return self.json[THRESHOLDS]
     def timestamps(self):
-        return get_timestamps(self.json)
+        if self._timestamps is None:
+            self._timestamps = get_timestamps(self.json)
+        return self._timestamps
     def counts(self, frequency=None):
-        counts = counts2df(self.json)
+        counts = counts2df(self.json, timestamps=self.timestamps())
         if frequency is not None:
             counts = counts.resample(frequency).sum().dropna()
         return counts
     def ml_analyzed(self, frequency=None):
         if not ML_ANALYZED in self.json:
             raise ValueError('no ml_analyzed information in summary')
-        ma = ml_analyzed2series(self.json) 
+        ma = ml_analyzed2series(self.json, timestamps=self.timestamps()) 
         if frequency is not None:
             ma = ma.resample(frequency).sum().dropna()
         return ma
