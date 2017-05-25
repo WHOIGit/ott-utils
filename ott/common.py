@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from scipy.io import loadmat
+import pandas as pd
 
 CLASS2USE = 'class2useTB'
 UNCLASSIFIED = 'unclassified'
@@ -39,3 +40,6 @@ def split_column(df, colname, names):
         df[name] = [v[i] for v in df[colname]]
     df.pop(colname)
     return df
+
+def parse_timestamps(str_timestamps):
+    return [ pd.to_datetime(ts) for ts in str_timestamps ]

@@ -2,11 +2,9 @@ import json
 
 import pandas as pd
 
+from .common import parse_timestamps
 from .ml_analyzed import ML_ANALYZED
 from .class_scores import TIMESTAMPS, CLASSES, COUNTS, THRESHOLDS
-
-def parse_timestamps(str_timestamps):
-    return [ pd.to_datetime(ts) for ts in str_timestamps ]
 
 def ml_analyzed2series(counts, timestamps=None):
     """requires ml_analyzed to be merged into count summary
