@@ -10,7 +10,7 @@ from ifcb.data.identifiers import Pid
 from .common import loadmat_validate, split_column
 from .common import CLASS2USE, UNCLASSIFIED
 
-from .ml_analyzed import ML_ANALYZED
+from .ml_analyzed import ML_ANALYZED, ml_analyzed2dict
 
 SCORES = 'TBscores'
 CLASSIFIER_NAME = 'classifierName'
@@ -75,9 +75,10 @@ def get_opt_thresh(class_dir, classifier_dir):
     opt_thresh = { k: thresholds[k] for k in class2useTB if k != UNCLASSIFIED }
     return opt_thresh
 
-def summarize_counts(the_dir, thresh, log_callback=None):
+def summarize_counts(class_dir, thresholds, log_callback=None, ml_analyzed=None):
     """
-    :param thresh dict of thresh by class name
+    :param thresholds dict of thresholds by class name
+    :param ml_analyzed output of summarize_ml_analyzed
 
     summarize class counts for an entire directory of
     class scores files and return as a json-serializable
@@ -98,13 +99,18 @@ def summarize_counts(the_dir, thresh, log_callback=None):
             }
         }
     """
+    if ml_analyzed is not None:
+        mad = ml_analyzed2dict(ml_analyzed)
+
     classes = []
     timestamps = []
     counts = []
     lids = []
 
-    for path in sorted(find_class_files(the_dir)):
+    for path in sorted(find_class_files(class_dir)):
         pid = Pid(path)
+        if ml_analyzed is not None and pid.lid not in mad:
+            continue
         if log_callback is not None:
             log_callback('{} {}'.format(pid.timestamp, pid.lid))
         timestamps.append('{}'.format(pid.timestamp))
@@ -114,17 +120,21 @@ def summarize_counts(the_dir, thresh, log_callback=None):
             classes = list(scores.class2use)
         if not counts:
             counts = { k: [] for k in classes }
-        class_counts = scores.class_counts(thresh)
+        class_counts = scores.class_counts(thresholds)
         for i, k in enumerate(classes):
             counts[k].append(int(class_counts[i]))
 
     out = {
-        THRESHOLDS: thresh,
+        THRESHOLDS: thresholds,
         LIDS: lids,
         CLASSES: classes,
         TIMESTAMPS: timestamps,
         COUNTS: counts
     }
+
+    if ml_analyzed is not None:
+        ma = [ mad.get(k,0) for k in lids ]
+        out[ML_ANALYZED] = ma
 
     return out
 
@@ -132,6 +142,6 @@ def merge_ml_analyzed(count_summary, ml_analyzed_summary):
     """consumes the output of summarize_counts and summarize_ml_analyzed
     into a merged structure that is the same as the count summary except
     with an additional ml_analyzed field. modifies count_summary in place"""
-    mad = dict(zip(ml_analyzed_summary[LIDS], ml_analyzed_summary[ML_ANALYZED]))
+    mad = ml_analyzed2dict(ml_analyzed_summary)
     ma = [ mad.get(k,0) for k in count_summary[LIDS] ]
     count_summary[ML_ANALYZED] = ma
