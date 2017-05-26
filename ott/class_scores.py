@@ -7,7 +7,7 @@ from scipy.io import loadmat
 
 from ifcb.data.identifiers import Pid
 
-from .common import loadmat_validate, split_column
+from .common import loadmat_validate, split_column, unparse_timestamps
 from .common import CLASS2USE, UNCLASSIFIED
 
 from .ml_analyzed import ML_ANALYZED, ml_analyzed2dict
@@ -113,7 +113,7 @@ def summarize_counts(class_dir, thresholds, log_callback=None, ml_analyzed=None)
             continue
         if log_callback is not None:
             log_callback('{} {}'.format(pid.timestamp, pid.lid))
-        timestamps.append('{}'.format(pid.timestamp))
+        timestamps.append(pid.timestamp)
         lids.append(pid.lid)
         scores = ClassScores(path)
         if not classes:
@@ -123,6 +123,8 @@ def summarize_counts(class_dir, thresholds, log_callback=None, ml_analyzed=None)
         class_counts = scores.class_counts(thresholds)
         for i, k in enumerate(classes):
             counts[k].append(int(class_counts[i]))
+
+    timestamps = unparse_timestamps(timestamps)
 
     out = {
         THRESHOLDS: thresholds,

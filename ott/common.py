@@ -5,6 +5,9 @@ import pandas as pd
 CLASS2USE = 'class2useTB'
 UNCLASSIFIED = 'unclassified'
 
+# do not format timezone, all times are UTC
+TIMESTAMP_FORMAT = '%Y-%m-%d %H:%M:%S'
+
 def loadmat_validate(path, *keys):
     """load a mat file and check for the presence of given keys"""
     f = loadmat(path, squeeze_me=True)
@@ -44,5 +47,9 @@ def split_column(df, colname, names):
 def parse_timestamps(str_timestamps):
     return [ pd.to_datetime(ts) for ts in str_timestamps ]
 
+def unparse_timestamp(datetime):
+    fmt_string = '{:'+TIMESTAMP_FORMAT+'}'
+    return fmt_string.format(datetime)
+
 def unparse_timestamps(datetimes):
-    return [ '{}'.format(ts) for ts in datetimes ]
+    return [ unparse_timestamp(ts) for ts in datetimes ]
