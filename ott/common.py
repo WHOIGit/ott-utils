@@ -30,20 +30,6 @@ def datetime2datenum(dt):
    frac = (dt-datetime(dt.year,dt.month,dt.day,0,0,0)).seconds / (24.0 * 60.0 * 60.0)
    return mdn.toordinal() + frac
 
-def split_column(df, colname, names):
-    """
-    Convert col = [[a1, b1, c1], [a2, b2, c2]]
-    into
-    col1 = [a1, a2]
-    col2 = [b1, b2]
-    col3 = [c1, c2]
-    ]
-    """
-    for i, name in enumerate(names):
-        df[name] = [v[i] for v in df[colname]]
-    df.pop(colname)
-    return df
-
 def parse_timestamps(str_timestamps):
     return [ pd.to_datetime(ts) for ts in str_timestamps ]
 
