@@ -1,15 +1,22 @@
 import pandas as pd
 import numpy as np
+import json
 
 from .common import loadmat_validate, datenum2datetime, unparse_timestamps
 from .common import CLASS2USE, UNCLASSIFIED
-from .ml_analyzed import ML_ANALYZED
+from .ml_analyzed import ML_ANALYZED, LOOK_TIME, RUN_TIME
 from .class_scores import TIMESTAMPS, CLASSES, COUNTS, THRESHOLDS, LIDS
 from .class_summary import ClassSummary
 
 FILELIST = 'filelistTB'
 MDATE = 'mdateTB'
 ML_ANALYZED_TB = 'ml_analyzedTB'
+
+# the following are legacy keys for mat ml_analyzed files
+FILELIST_ALL = 'filelist_all'
+# these don't have the underbar that the new keys have
+RUNTIME = 'runtime'
+LOOKTIME = 'looktime'
 
 def validate_thresh(thresh):
     if thresh in [None, 'adhoc', 'opt']:
@@ -56,7 +63,7 @@ class MatClassSummary(object):
         return { c: df[c].tolist() for c in cols }
     def get_ml_analyzed(self):
         return list(self.mat[ML_ANALYZED_TB])
-    def to_json(self, thresh=None):
+    def to_json(self, thresh=None, file=None):
         """return a json-serializable structure compatible
         with what is used by ClassSummary. thresh = None, 'adhoc', or 'opt'"""
         classes = self.get_classes()
@@ -74,16 +81,34 @@ class MatClassSummary(object):
         }
         out.update(self._get_thresholds_dict(thresh))
 
-        return out
+        if file is not None:
+            json.dump(out, file)
+        else:
+            return out
     def to_class_summary(self, thresh=None):
+        # FIXME this is inefficient because of parsing of timestamps
         return ClassSummary(json_data=self.to_json(thresh=thresh))
 
-def read_ml_analyzed(path):
-    # read a legacy ml_analyzed mat file
-    # ignore variables other than the following
-    cols = ['filelist_all', 'looktime', 'minproctime', 'ml_analyzed', 'runtime']
-    mat = loadmat_validate(path, *cols)
-    # convert to dataframe
-    df = pd.DataFrame({ c: mat[c] for c in cols }, columns=cols)
-    df.index = df.pop('filelist_all') # index by bin LID
-    return df
+class MatMlAnalyzed(object):
+    def __init__(self, mat_path):
+        self._df = self._read_mat(mat_path)
+    def _read_mat(self, path):
+        # read a legacy ml_analyzed mat file
+        # ignore variables other than the following
+        cols = [FILELIST_ALL, LOOKTIME, ML_ANALYZED, RUNTIME]
+        mat = loadmat_validate(path, *cols)
+        # convert to dataframe
+        df = pd.DataFrame({ c: mat[c] for c in cols }, columns=cols)
+        df.index = df.pop(FILELIST_ALL) # index by bin LID
+        return df
+    def to_json(self, file=None):
+        j = {
+            LIDS: list(self._df.index),
+            ML_ANALYZED: list(self._df[ML_ANALYZED]),
+            LOOK_TIME: list(self._df[LOOKTIME]),
+            RUN_TIME: list(self._df[RUNTIME])
+        }
+        if file is not None:
+            json.dump(j, file)
+        else:
+            return j
