@@ -7,7 +7,7 @@ from scipy.io import loadmat
 
 from ifcb.data.identifiers import Pid
 
-from .common import loadmat_validate, split_column, unparse_timestamps
+from .common import loadmat_validate, unparse_timestamps
 from .common import CLASS2USE, UNCLASSIFIED
 
 from .ml_analyzed import ML_ANALYZED, ml_analyzed2dict
@@ -89,14 +89,16 @@ def summarize_counts(class_dir, thresholds, log_callback=None, ml_analyzed=None)
                 "class1": t1,
                 "class2": t2,
                 ...
-            }
+            },
             LIDS: [lid1, lid2, lid3 ...],
             TIMESTAMPS: [ts1, ts2, ts3 ...], # per timestep
             COUNTS: {
                 "class1": [c1, c2, c3 ...], # for class 1 per time
                 "class2": [c1, c2, c3 ...], # for class 2 per time
                 ...
-            }
+            },
+            [optionally]
+            ML_ANALYZED: [ma1, ma2, ma3 ...],
         }
     """
     if ml_analyzed is not None:
