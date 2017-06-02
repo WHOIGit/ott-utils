@@ -50,7 +50,7 @@ def compute_ml_analyzed_s1_adc(adc, min_proc_time):
     return ml_analyzed, look_time, run_time
 
 def compute_ml_analyzed_s1(abin, min_proc_time=MIN_PROC_TIME):
-    return compute_ml_analyzed_s1_adc(abin.adc)
+    return compute_ml_analyzed_s1_adc(abin.adc, min_proc_time)
 
 def compute_ml_analyzed_s2(abin):
     FLOW_RATE = 0.25 # ml/minute
