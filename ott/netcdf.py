@@ -86,13 +86,13 @@ def list_csdir(cs_dir):
         if re.match(r'summary_allTB\d+\.mat',fn):
             yield os.path.join(cs_dir, fn)
     
-def csdir2netcdf(cs_dir, nc_dir, frequency=None, threshold=None, metadata=IfcbMetadata()):
+def csdir2netcdf(cs_dir, nc_dir, frequency=None, metadata=IfcbMetadata()):
     """convert a directory of class summary files to nc files.
     see cs2netcdf. will write a datasets.xml snippet to the output directory"""
     for cs_path in list_csdir(cs_dir):
         fn = os.path.basename(cs_path)
         nc_fn = re.sub(r'\.mat$','.nc',fn)
         nc_path = os.path.join(nc_dir, nc_fn)
-        ds_xml = cs2netcdf(cs_path, nc_path, frequency=frequency, threshold=threshold, metadata=metadata)
+        ds_xml = cs2netcdf(cs_path, nc_path, frequency=frequency, metadata=metadata)
         with open(os.path.join(nc_dir,'dataset.xml'),'w') as fout:
             fout.write(ds_xml)
