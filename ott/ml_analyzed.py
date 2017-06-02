@@ -1,8 +1,10 @@
+from collections import defaultdict
+
 from scipy.io import loadmat
 import numpy as np
 import pandas as pd
 
-from .common import parse_timestamps
+from .common import parse_timestamps, unparse_timestamp
 
 from ifcb.data.adc import SCHEMA_VERSION_1, SCHEMA_VERSION_2
 
@@ -81,29 +83,19 @@ def summarize_ml_analyzed(data_dir, log_callback=None):
         RUN_TIME: [rt1, rt2 ...]
     }
     """
-    lids = []
-    timestamps = []
-    ml_analyzed = []
-    look_time = []
-    run_time = []
+    summary = defaultdict(lambda: [])
 
     for b in data_dir:
-        lids.append(b.lid)
-        timestamps.append('{}'.format(b.timestamp))
-        ma, lt, rt = compute_ml_analyzed(b)
+        ml_analyzed, look_time, run_time = compute_ml_analyzed(b)
         if log_callback is not None:
-            log_callback('{} {:.3f}'.format(b.lid, ma))
-        ml_analyzed.append(ma)
-        look_time.append(lt)
-        run_time.append(rt)
+            log_callback('{} {:.3f}'.format(b.lid, ml_analyzed))
+        summary[LIDS].append(b.lid)
+        summary[TIMESTAMPS].append(unparse_timestamp(b.timestamp))
+        summary[ML_ANALYZED].append(ml_analyzed)
+        summary[LOOK_TIME].append(look_time)
+        summary[RUN_TIME].append(run_time)
 
-    return {
-        LIDS: lids,
-        TIMESTAMPS: timestamps,
-        ML_ANALYZED: ml_analyzed,
-        LOOK_TIME: look_time,
-        RUN_TIME: run_time
-    }
+    return summary
 
 def ml_analyzed2df(js):
     """given the output of summarize_ml_analyzed, return
