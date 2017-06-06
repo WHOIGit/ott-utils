@@ -128,24 +128,23 @@ def summarize_counts(class_dir, thresholds, log_callback=None, ml_analyzed=None)
 
     timestamps = unparse_timestamps(timestamps)
 
-    out = {
+    summary = {
         THRESHOLDS: thresholds,
-        LIDS: lids,
         CLASSES: classes,
+        LIDS: lids,
         TIMESTAMPS: timestamps,
         COUNTS: counts
     }
 
     if ml_analyzed is not None:
-        ma = [ mad.get(k,0) for k in lids ]
-        out[ML_ANALYZED] = ma
+        merge_ml_analyzed(summary, ml_analyzed)
 
-    return out
+    return summary
 
 def merge_ml_analyzed(count_summary, ml_analyzed_summary):
     """consumes the output of summarize_counts and summarize_ml_analyzed
     into a merged structure that is the same as the count summary except
     with an additional ml_analyzed field. modifies count_summary in place"""
     mad = ml_analyzed2dict(ml_analyzed_summary)
-    ma = [ mad.get(k,0) for k in count_summary[LIDS] ]
+    ma = [ mad.get(k,np.nan) for k in count_summary[LIDS] ]
     count_summary[ML_ANALYZED] = ma
