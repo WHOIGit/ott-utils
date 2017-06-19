@@ -18,5 +18,3 @@ metadata:
 summary:
   # time binning frequency (e.g., "1d", "6h")
   frequency: 6h
-  # threshold (blank, "opt", or "adhoc")
-  threshold: 
