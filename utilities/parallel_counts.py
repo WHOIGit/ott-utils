@@ -14,9 +14,12 @@ def cc_args(class_dir, thresholds):
         yield (path, thresholds)
 
 def cc(path_and_thresholds):
-    path, thresholds = path_and_thresholds
-    c = ClassScores(path)
-    return path, c.class_counts(thresholds), c.class2use
+    try:
+        path, thresholds = path_and_thresholds
+        c = ClassScores(path)
+        return path, c.class_counts(thresholds), c.class2use
+    except:
+        return None, None, None
 
 if __name__=='__main__':
     ap = ArgumentParser()
@@ -40,6 +43,9 @@ if __name__=='__main__':
 
     with Pool(16) as pool:
         for path, class_counts, class2use in pool.imap_unordered(cc, cc_args(args.class_dir, thresholds)):
+            if class_counts is None:
+                continue # skip failed runs
+                
             logging.info(path)
             pid = Pid(path)
             lids.append(pid.lid)
