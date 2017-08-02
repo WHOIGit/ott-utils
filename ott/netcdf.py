@@ -45,7 +45,10 @@ class IfcbMetadata(object):
             'global': {
                 'title': self.title,
                 'summary': self.summary,
-                'institution': self.institution
+                'institution': self.institution,
+                'cdm_data_type': 'timeSeries',
+                'cdm_timeseries_variables': 'station, latitude, longitude, z',
+                'subsetVariables': 'z'
             },
             'platform': {
                 'long_name': self.platform_name
