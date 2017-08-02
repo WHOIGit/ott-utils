@@ -58,12 +58,15 @@ class ClassScores(object):
 def find_class_files(class_dir):
     return glob(os.path.join(class_dir, CLASS_GLOB))
 
-def get_opt_thresh(class_dir, classifier_dir):
+def find_a_class_file(class_dir):
     try:
         # arbitrarily pick the first one, all should use the same classifier
-        class_path = list(find_class_files(class_dir))[0]
+        return list(find_class_files(class_dir))[0]
     except IndexError:
         raise FileNotFoundError('no class score files found in {}'.format(class_dir))
+
+def get_opt_thresh(class_dir, classifier_dir):
+    class_path = find_a_class_file(class_dir)
     classfile = loadmat_validate(class_path, CLASSIFIER_NAME, CLASS2USE)
     cname = classfile[CLASSIFIER_NAME]
     classifier_path = os.path.join(classifier_dir,'{}.mat'.format(cname))
