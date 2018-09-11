@@ -1,0 +1,106 @@
+<dataset type="EDDTableFromNcCFFiles" datasetID="{{dataset_id}}" active="true">
+  <reloadEveryNMinutes>10080</reloadEveryNMinutes>
+  <updateEveryNMillis>10000</updateEveryNMillis>
+  <fileDir>{{directory}}</fileDir>
+  <fileNameRegex>.*\.nc</fileNameRegex>
+  <recursive>true</recursive>
+  <pathRegex>.*</pathRegex>
+  <metadataFrom>last</metadataFrom>
+  <preExtractRegex/>
+  <postExtractRegex/>
+  <extractRegex/>
+  <columnNameForExtract/>
+  <sortFilesBySourceNames/>
+  <fileTableInMemory>false</fileTableInMemory>
+  <accessibleViaFiles>false</accessibleViaFiles>
+  <addAttributes>
+    <att name="Conventions">CF-1.6, COARDS, ACDD-1.3</att>
+    <att name="creator_name">{{creator_name}}</att>
+    <att name="creator_type">institution</att>
+    <att name="creator_url">https://www.whoi.edu/</att>
+    <att name="infoUrl">https://www.whoi.edu/</att>
+    <att name="keywords">array, array-data, asterionellopsis, bad, cerataul, cerataulina, ceratium, chaetoceros, ciliate, ciliate_mix, class, clusterflagellate, comprehensive, concentration, corethron, coscinodiscus, crs, cylindrotheca, dact, DactFragCerataul, dactyliosolen, data, detritus, dictyocha, dino30, dinobryon, dinophysis, dirty, dissolved, dissolved nutrients, ditylum, elongated, ephemera, eucampia, euglena, flaccida, frag, gonyaulax, guinardia, Guinardia_flaccida, Guinardia_striata, gyrodinium, hemiaulus, hole, identifier, institution, kiteflagellates, laboea, large, latitude, lauderia, leptocylindrus, licmophora, longitude, mix, mix_elongated, myrionecta, nutrients, oceanographic, odontella, paralia, pennate, phaeocystis, phytoplankton, pleurosigma, prorocentrum, pseudonitzschia, pyramimonas, quality, rhizosolenia, skeletonema, station, stephanopyxis, stewardship, striata, system, thalassionema, thalassiosira, Thalassiosira_dirty, time, tintinnid, unclassified, whoi, woods</att>
+    <att name="license">[standard]</att>
+    <att name="sourceUrl">(local files)</att>
+    <att name="standard_name_vocabulary">CF Standard Name Table v29</att>
+    <att name="subsetVariables">station, latitude, longitude, z, crs</att>
+    <att name="cdm_timeseries_variables">station, latitude, longitude, z, crs</att>
+    <att name="summary">{{summary}}</att>
+    <att name="title">{{title}}</att>
+  </addAttributes>
+  <dataVariable>
+    <sourceName>crs</sourceName>
+    <destinationName>crs</destinationName>
+    <dataType>int</dataType>
+    <addAttributes>
+      <att name="ioos_category">Unknown</att>
+      <att name="long_name">CRS</att>
+    </addAttributes>
+  </dataVariable>
+  <dataVariable>
+    <sourceName>station</sourceName>
+    <destinationName>station</destinationName>
+    <dataType>String</dataType>
+    <addAttributes>
+      <att name="ioos_category">Identifier</att>
+    </addAttributes>
+  </dataVariable>
+  <dataVariable>
+    <sourceName>t</sourceName>
+    <destinationName>time</destinationName>
+    <dataType>double</dataType>
+    <addAttributes>
+      <att name="ioos_category">Time</att>
+      <att name="long_name">T</att>
+      <att name="source_name">t</att>
+      <att name="units">seconds since 1990-01-01T00:00:00Z</att>
+    </addAttributes>
+  </dataVariable>
+  <dataVariable>
+    <sourceName>y</sourceName>
+    <destinationName>latitude</destinationName>
+    <dataType>double</dataType>
+    <addAttributes>
+      <att name="colorBarMaximum" type="double">90.0</att>
+      <att name="colorBarMinimum" type="double">-90.0</att>
+      <att name="ioos_category">Location</att>
+      <att name="long_name">Latitude</att>
+      <att name="source_name">y</att>
+      <att name="standard_name">latitude</att>
+      <att name="units">degrees_north</att>
+    </addAttributes>
+  </dataVariable>
+  <dataVariable>
+    <sourceName>x</sourceName>
+    <destinationName>longitude</destinationName>
+    <dataType>double</dataType>
+    <addAttributes>
+      <att name="colorBarMaximum" type="double">180.0</att>
+      <att name="colorBarMinimum" type="double">-180.0</att>
+      <att name="ioos_category">Location</att>
+      <att name="long_name">Longitude</att>
+      <att name="source_name">x</att>
+      <att name="standard_name">longitude</att>
+      <att name="units">degrees_east</att>
+    </addAttributes>
+  </dataVariable>
+  <dataVariable>
+    <sourceName>z</sourceName>
+    <destinationName>z</destinationName>
+    <dataType>long</dataType>
+    <addAttributes>
+      <att name="ioos_category">Location</att>
+      <att name="long_name">Z</att>
+    </addAttributes>
+  </dataVariable>{% for varname in varnames %}
+  <dataVariable>
+    <sourceName>{{varname}}</sourceName>
+    <destinationName>{{varname}}</destinationName>
+    <dataType>double</dataType>
+    <addAttributes>
+      <att name="coordinates">null</att>
+      <att name="ioos_category">Unknown</att>
+      <att name="long_name">{{varname}}</att>
+    </addAttributes>
+  </dataVariable>{% endfor %}
+</dataset>

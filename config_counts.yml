@@ -1,7 +1,7 @@
 metadata:
-  title: Phytoplankton concentration by class
+  title: Phytoplankton counts by class
   summary: >
-    Phytoplankton concentration by class derived
+    Phytoplankton counts by class derived
     from images collected by Imaging FlowCytobot
   # location of IFCB
   latitude: 41.325
@@ -16,5 +16,6 @@ metadata:
   institution: WHOI
 
 summary:
+  product: counts
   # time binning frequency (e.g., "1d", "6h")
   frequency: 6h

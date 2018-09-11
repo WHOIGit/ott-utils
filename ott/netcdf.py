@@ -20,8 +20,13 @@ IFCB_NAME = 'Imaging FlowCytobot'
 
 MVCO_IFCB_INSTITUTION='WHOI'
 
-TITLE='Phytoplankton concentration (IFCB)'
-SUMMARY='Phytoplankton concentration by class '\
+CONC_TITLE='Phytoplankton concentration (IFCB)'
+CONC_SUMMARY='Phytoplankton concentration by class '\
+         'derived from images collected by '\
+         'Imaging FlowCytobot'
+
+COUNT_TITLE='Phytoplankton counts (IFCB)'
+COUNT_SUMMARY='Phytoplankton counts by class '\
          'derived from images collected by '\
          'Imaging FlowCytobot'
 
@@ -31,7 +36,7 @@ class IfcbMetadata(object):
     def __init__(self, latitude=MVCO_ASIT_LAT, longitude=MVCO_ASIT_LON,
                  depth=MVCO_IFCB_DEPTH, platform_name=MVCO_ASIT_NAME,
                  instrument_name=IFCB_NAME, institution=MVCO_IFCB_INSTITUTION,
-                 title=TITLE, summary=SUMMARY):
+                 title=CONC_TITLE, summary=CONC_SUMMARY):
         self.latitude = latitude
         self.longitude = longitude
         self.depth = depth
@@ -58,30 +63,44 @@ class IfcbMetadata(object):
             }
         }
 
-def cs2netcdf(cs_path, nc_path, frequency=None, metadata=IfcbMetadata()):
+def get_c_or_c(cs_path, frequency=None, what='concentrations'):
+    assert what in ['concentrations', 'counts']
+    cs = ClassSummary(cs_path)
+    if what == 'concentrations':
+        out = cs.concentrations(frequency=frequency)
+    elif what == 'counts':
+        out = cs.counts(frequency=frequency)
+    return out
+
+def c_or_c2netcdf(c_or_c, nc_path, dsxml_path=None, metadata=IfcbMetadata()):
+    attrs = metadata.get_attributes()   
+
+    if dsxml_path is not None:
+        nc_dir = os.path.abspath(os.path.dirname(nc_path))
+        dataset_xml = generate_datasets_xml(nc_dir, metadata, c_or_c)
+        with open(dsxml_path,'w') as fout:
+            fout.write(dataset_xml)
+
+    # set up dataframe for pocean
+    c_or_c['y'] = metadata.latitude
+    c_or_c['x'] = metadata.longitude
+    c_or_c['z'] = metadata.depth
+    c_or_c['t'] = c_or_c.index
+    c_or_c['station'] = metadata.platform_name
+    
+    OrthogonalMultidimensionalTimeseries.from_dataframe(c_or_c, nc_path, attributes=attrs)
+
+def cs2netcdf(cs_path, nc_path, dsxml_path=None, frequency=None, metadata=IfcbMetadata()):
     """Convert a class summary to netcdf
     :param cs_path: path of class summary json file
     :param nc_path: path of output .nc file
+    :param dsxml_path: path of output dataset.xml file
     :param frequency: binning frequency for concentrations (None for no binning)
     :param metadata: metadata attributes (default will use hardcoded WHOI/MVCO values)
-    :returns a datasets.xml snippet for ERDDAP
     """
-    cs = ClassSummary(cs_path)
-    conc = cs.concentrations(frequency=frequency)
-    attrs = metadata.get_attributes()
+    c_or_c = get_c_or_c(cs_path, frequency=frequency, what='concentrations')
 
-    dataset_xml = generate_datasets_xml(os.path.abspath(os.path.dirname(nc_path)), metadata, conc)
-    
-    # set up dataframe for pocean
-    conc['y'] = metadata.latitude
-    conc['x'] = metadata.longitude
-    conc['z'] = metadata.depth
-    conc['t'] = conc.index
-    conc['station'] = metadata.platform_name
-    
-    OrthogonalMultidimensionalTimeseries.from_dataframe(conc, nc_path, attributes=attrs)
-
-    return dataset_xml
+    c_or_c2netcdf(c_or_c, nc_path, dsxml_path, metadata=metadata)
 
 def list_csdir(cs_dir):
     """given a directory, list all summary_allTB\d+.mat files"""

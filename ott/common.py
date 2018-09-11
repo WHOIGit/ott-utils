@@ -1,12 +1,16 @@
 from datetime import datetime, timedelta
 from scipy.io import loadmat
 import pandas as pd
+import logging
 
 CLASS2USE = 'class2useTB'
 UNCLASSIFIED = 'unclassified'
 
 # do not format timezone, all times are UTC
 TIMESTAMP_FORMAT = '%Y-%m-%d %H:%M:%S'
+
+def config_logging():
+    logging.basicConfig(format='%(asctime)s %(message)s',level=logging.INFO)
 
 def loadmat_validate(path, *keys):
     """load a mat file and check for the presence of given keys"""

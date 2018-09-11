@@ -49,6 +49,9 @@ def compute_ml_analyzed_s1_adc(adc, min_proc_time):
     look_time = run_time - proc_time.sum() - min_proc_time
     # ml analyzed is look time times flow rate
     ml_analyzed = look_time * FLOW_RATE
+    # this can produce negative values. convert those to nans
+    if ml_analyzed < 0:
+        ml_analyzed = np.nan
     return ml_analyzed, look_time, run_time
 
 def compute_ml_analyzed_s1(abin, min_proc_time=MIN_PROC_TIME):

@@ -1,10 +1,12 @@
 from argparse import ArgumentParser
 import json
+import logging
 
 import yaml
 from munch import munchify
 
-from ott.netcdf import IfcbMetadata, cs2netcdf
+from ott.netcdf import IfcbMetadata, get_c_or_c, c_or_c2netcdf
+from ott.common import config_logging
 
 def load_config(config_file):
     with open(config_file) as fin:
@@ -14,8 +16,11 @@ if __name__=='__main__':
     ap = ArgumentParser()
     ap.add_argument('count_summary', help='count summary JSON file')
     ap.add_argument('output', help='output NetCDF file')
+    ap.add_argument('-d', '--dataset', help='output datasets.xml file', default=None)
     ap.add_argument('-c', '--config', help='configuration file', default='config.yml')
     args = ap.parse_args()
+
+    config_logging()
 
     # load configuration
     config = load_config(args.config)
@@ -27,9 +32,17 @@ if __name__=='__main__':
     with open(args.count_summary) as fin:
         counts = json.load(fin)
 
-    if not 'ml_analyzed' in counts:
+    what = config.summary.product
+    assert what in ['counts', 'concentrations'], 'product must be either counts or concentrations'
+
+    if what == 'concentrations' and not 'ml_analyzed' in counts:
         raise ValueError('counts must contain ml_analyzed')
 
     frequency = config.summary.frequency
 
-    cs2netcdf(args.count_summary, args.output, frequency=frequency, metadata=md)
+    logging.info('writing summary output to {}'.format(args.output))
+
+    c_or_c = get_c_or_c(args.count_summary, frequency, what=what)
+    c_or_c2netcdf(c_or_c, args.output, args.dataset, metadata=md)
+
+    logging.info('done.')

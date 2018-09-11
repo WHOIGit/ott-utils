@@ -1,0 +1,21 @@
+metadata:
+  title: Phytoplankton concentration by class
+  summary: >
+    Phytoplankton concentration by class derived
+    from images collected by Imaging FlowCytobot
+  # location of IFCB
+  latitude: 41.325
+  longitude: -70.5667
+  # sampling depth in meters
+  depth: 4
+  # name of instrument (IFCB)
+  instrument_name: Imaging FlowCytobot
+  # platform from which IFCB is deployed
+  platform_name: MVCO ASIT
+  # host institution
+  institution: WHOI
+
+summary:
+  product: concentrations
+  # time binning frequency (e.g., "1d", "6h")
+  frequency: 6h

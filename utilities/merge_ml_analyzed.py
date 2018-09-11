@@ -1,9 +1,11 @@
 import json
 import sys
 from argparse import ArgumentParser
+import logging
 
 from ott.class_scores import merge_ml_analyzed
 from ott.class_summary import ClassSummary 
+from ott.common import config_logging
 
 if __name__=='__main__':
     ap = ArgumentParser()
@@ -12,11 +14,15 @@ if __name__=='__main__':
     ap.add_argument('-o', '--output', help='output file')
     args = ap.parse_args()
 
+    config_logging()
+    
     with open(args.ml_analyzed_summary) as fin:
         ml_analyzed = json.load(fin)
 
     with open(args.count_summary) as fin:
         count_summary = json.load(fin)
+
+    logging.info('merging ml_analyzed with counts')
 
     merge_ml_analyzed(count_summary, ml_analyzed)
 

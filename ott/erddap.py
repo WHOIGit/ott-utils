@@ -19,7 +19,7 @@ def generate_datasets_xml(directory, metadata, conc):
         loader = PackageLoader('ott','resources'),
         autoescape = select_autoescape('xml')
     )
-    template = env.get_template('dataset_xml')
+    template = env.get_template('dataset.xml')
     context = {
         'dataset_id': gen_id('ifcb'),
         'directory': directory,
