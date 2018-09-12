@@ -7,7 +7,7 @@ from argparse import ArgumentParser
 
 from ifcb import DataDirectory
 
-from ott.common import parse_timestamps, unparse_timestamps
+from ott.common import parse_timestamps, unparse_timestamps, config_logging
 from ott.ml_analyzed import LIDS, TIMESTAMPS, ML_ANALYZED, RUN_TIME, LOOK_TIME
 
 def cma_args(dd, skip=[]):
@@ -31,7 +31,7 @@ if __name__=='__main__':
     ap.add_argument('-p', '--processes', help='Number of processes to use', default=16, type=int)
     args = ap.parse_args()
 
-    logging.basicConfig(format='%(asctime)s %(message)s',level=logging.INFO)
+    config_logging()
 
     dd = DataDirectory(args.data_dir)
 

@@ -6,9 +6,11 @@ from collections import defaultdict
 import json
 from argparse import ArgumentParser
 
-from ott.common import parse_timestamps, unparse_timestamps
+from ott.common import parse_timestamps, unparse_timestamps, config_logging
 from ott.class_scores import ClassScores, find_class_files, get_opt_thresh
 from ott.class_scores import CLASSES, THRESHOLDS, TIMESTAMPS, LIDS, COUNTS
+
+"""Compute counts in multiple parallel processes"""
 
 def cc_args(class_dir, thresholds, skip=[]):
     for path in sorted(find_class_files(class_dir)):
@@ -35,7 +37,7 @@ if __name__=='__main__':
     ap.add_argument('-p', '--processes', help='Number of processes to use', default=16, type=int)
     args = ap.parse_args()
 
-    logging.basicConfig(format='%(asctime)s %(message)s',level=logging.INFO)
+    config_logging()
 
     if args.previous is not None and os.path.exists(args.previous):
         logging.info('loading previous results...')
