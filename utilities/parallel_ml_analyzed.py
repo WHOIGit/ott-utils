@@ -15,7 +15,7 @@ def cma_args(dd, skip=[]):
         if bn.lid not in skip:
             yield bn
         else:
-            logging.info('skipped {}'.format(bn.lid))
+            logging.debug('skipped {}'.format(bn.lid))
 
 def cma(bn):
     from ott.ml_analyzed import compute_ml_analyzed

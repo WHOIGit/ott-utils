@@ -16,7 +16,7 @@ def cc_args(class_dir, thresholds, skip=[]):
     for path in sorted(find_class_files(class_dir)):
         pid = Pid(path)
         if pid.lid in skip:
-            logging.info('skipping {}'.format(pid.lid))
+            logging.debug('skipping {}'.format(pid.lid))
         else:
             yield (path, thresholds)
 
