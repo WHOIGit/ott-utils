@@ -81,7 +81,7 @@ def c_or_c2netcdf(c_or_c, nc_path, dsxml_path=None, metadata=IfcbMetadata()):
         with open(dsxml_path,'w') as fout:
             fout.write(dataset_xml)
 
-    # set up dataframe for pocean
+    # set up dataframe for pocean; this adds columns
     c_or_c['y'] = metadata.latitude
     c_or_c['x'] = metadata.longitude
     c_or_c['z'] = metadata.depth

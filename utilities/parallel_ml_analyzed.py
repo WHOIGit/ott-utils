@@ -28,7 +28,7 @@ if __name__=='__main__':
     ap.add_argument('-P','--previous', help='previous output file')
     ap.add_argument('-o', '--output', help='output file name',
         default='ml_analyzed_summary.json')
-    ap.add_argument('-p', '--processes', help='Number of processes to use', default=16)
+    ap.add_argument('-p', '--processes', help='Number of processes to use', default=16, type=int)
     args = ap.parse_args()
 
     logging.basicConfig(format='%(asctime)s %(message)s',level=logging.INFO)
