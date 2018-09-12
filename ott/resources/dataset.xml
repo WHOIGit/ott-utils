@@ -19,7 +19,7 @@
     <att name="creator_type">institution</att>
     <att name="creator_url">https://www.whoi.edu/</att>
     <att name="infoUrl">https://www.whoi.edu/</att>
-    <att name="keywords">array, array-data, asterionellopsis, bad, cerataul, cerataulina, ceratium, chaetoceros, ciliate, ciliate_mix, class, clusterflagellate, comprehensive, concentration, corethron, coscinodiscus, crs, cylindrotheca, dact, DactFragCerataul, dactyliosolen, data, detritus, dictyocha, dino30, dinobryon, dinophysis, dirty, dissolved, dissolved nutrients, ditylum, elongated, ephemera, eucampia, euglena, flaccida, frag, gonyaulax, guinardia, Guinardia_flaccida, Guinardia_striata, gyrodinium, hemiaulus, hole, identifier, institution, kiteflagellates, laboea, large, latitude, lauderia, leptocylindrus, licmophora, longitude, mix, mix_elongated, myrionecta, nutrients, oceanographic, odontella, paralia, pennate, phaeocystis, phytoplankton, pleurosigma, prorocentrum, pseudonitzschia, pyramimonas, quality, rhizosolenia, skeletonema, station, stephanopyxis, stewardship, striata, system, thalassionema, thalassiosira, Thalassiosira_dirty, time, tintinnid, unclassified, whoi, woods</att>
+    <att name="keywords">ifcb, phytoplankton, plankton, imaging</att>
     <att name="license">[standard]</att>
     <att name="sourceUrl">(local files)</att>
     <att name="standard_name_vocabulary">CF Standard Name Table v29</att>
