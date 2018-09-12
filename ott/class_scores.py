@@ -1,4 +1,5 @@
 import os
+import re
 from glob import glob
 import json 
 import pandas as pd
@@ -65,10 +66,13 @@ def find_a_class_file(class_dir):
     except IndexError:
         raise FileNotFoundError('no class score files found in {}'.format(class_dir))
 
+def cp_basename(path):
+    return re.split(r'[\\/]',path)[-1]
+
 def get_opt_thresh(class_dir, classifier_dir):
     class_path = find_a_class_file(class_dir)
     classfile = loadmat_validate(class_path, CLASSIFIER_NAME, CLASS2USE)
-    cname = classfile[CLASSIFIER_NAME]
+    cname = cp_basename(classfile[CLASSIFIER_NAME])
     classifier_path = os.path.join(classifier_dir,'{}.mat'.format(cname))
     if not os.path.exists(classifier_path):
         raise FileNotFoundError('classifier file {} does not exist'.format(classifier_path))
