@@ -5,7 +5,7 @@ import logging
 import yaml
 from munch import munchify
 
-from ott.netcdf import IfcbMetadata, get_c_or_c, c_or_c2netcdf
+from ott.netcdf import IfcbMetadata, ClassSummaryOutput
 from ott.common import config_logging
 
 def load_config(config_file):
@@ -32,17 +32,24 @@ if __name__=='__main__':
     with open(args.count_summary) as fin:
         counts = json.load(fin)
 
-    what = config.summary.product
-    assert what in ['counts', 'concentrations'], 'product must be either counts or concentrations'
+    product = config.summary.product
+    assert product in ['counts', 'concentrations'], 'product must be either counts or concentrations'
 
-    if what == 'concentrations' and not 'ml_analyzed' in counts:
+    if product == 'concentrations' and not 'ml_analyzed' in counts:
         raise ValueError('counts must contain ml_analyzed')
 
     frequency = config.summary.frequency
+    nc_out = args.output
+    dsxml_path = args.dataset
 
-    logging.info('writing summary output to {}'.format(args.output))
-
-    c_or_c = get_c_or_c(args.count_summary, frequency, what=what)
-    c_or_c2netcdf(c_or_c, args.output, args.dataset, metadata=md)
+    cs = ClassSummaryOutput(args.count_summary)
+    logging.info('resampling {} at frequency {}'.format(product, frequency))
+    product = cs.get_product(product, frequency)
+    logging.info('writing summary output to {}'.format(nc_out))
+    cs.write_netcdf(product, nc_out)
+    logging.info('writing {}'.format(dsxml_path))
+    dsxml = cs.get_dsxml(product, nc_out)
+    with open(dsxml_path, 'w') as fout:
+        fout.write(dsxml)
 
     logging.info('done.')

@@ -15,7 +15,7 @@ def cma_args(dd, skip=[]):
         if bn.lid not in skip:
             yield bn
         else:
-            logging.info('skipped {}'.format(bn.lid))
+            logging.debug('skipped {}'.format(bn.lid))
 
 def cma(bn):
     from ott.ml_analyzed import compute_ml_analyzed
@@ -33,6 +33,8 @@ if __name__=='__main__':
 
     config_logging()
 
+    logging.info('computing ml_analyzed...')
+    
     dd = DataDirectory(args.data_dir)
 
     if args.previous is not None and os.path.exists(args.previous):

@@ -71,9 +71,12 @@ class ClassSummary(object):
         self._timestamps = None
     @property
     def thresholds(self):
-        if THRESHOLDS not in self.json:
-            raise ValueError('missing thresholds')
+        assert THRESHOLDS in self.json, 'missing thresholds'
         return self.json[THRESHOLDS]
+    @property
+    def classes(self):
+        assert CLASSES in self.json, 'missing class labels'
+        return self.json[CLASSES]
     def timestamps(self):
         if self._timestamps is None:
             self._timestamps = parse_timestamps(self.json[TIMESTAMPS])

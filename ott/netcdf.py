@@ -2,6 +2,7 @@ import os
 import re
 
 import netCDF4 as nc4
+import numpy as np
 
 from pocean.dsg.timeseries.om import OrthogonalMultidimensionalTimeseries
 
@@ -63,58 +64,39 @@ class IfcbMetadata(object):
             }
         }
 
-def get_c_or_c(cs_path, frequency=None, what='concentrations'):
-    assert what in ['concentrations', 'counts']
-    cs = ClassSummary(cs_path)
-    if what == 'concentrations':
-        out = cs.concentrations(frequency=frequency)
-    elif what == 'counts':
-        out = cs.counts(frequency=frequency)
-    return out
-
-def c_or_c2netcdf(c_or_c, nc_path, dsxml_path=None, metadata=IfcbMetadata()):
-    attrs = metadata.get_attributes()   
-
-    if dsxml_path is not None:
+class ClassSummaryOutput(ClassSummary):
+    def __init__(self, file, metadata=IfcbMetadata()):
+        super(ClassSummaryOutput, self).__init__(file)
+        self.metadata = metadata
+    def get_product(self, product='concentrations', frequency=None):
+        assert product in ['concentrations', 'counts']
+        if product == 'concentrations':
+            return self.concentrations(frequency)
+        elif product == 'counts':
+            return self.counts(frequency)
+    def get_dsxml(self, product, nc_path):
         nc_dir = os.path.abspath(os.path.dirname(nc_path))
-        dataset_xml = generate_datasets_xml(nc_dir, metadata, c_or_c)
-        with open(dsxml_path,'w') as fout:
-            fout.write(dataset_xml)
-
-    # set up dataframe for pocean; this adds columns
-    c_or_c['y'] = metadata.latitude
-    c_or_c['x'] = metadata.longitude
-    c_or_c['z'] = metadata.depth
-    c_or_c['t'] = c_or_c.index
-    c_or_c['station'] = metadata.platform_name
-    
-    OrthogonalMultidimensionalTimeseries.from_dataframe(c_or_c, nc_path, attributes=attrs)
-
-def cs2netcdf(cs_path, nc_path, dsxml_path=None, frequency=None, metadata=IfcbMetadata()):
-    """Convert a class summary to netcdf
-    :param cs_path: path of class summary json file
-    :param nc_path: path of output .nc file
-    :param dsxml_path: path of output dataset.xml file
-    :param frequency: binning frequency for concentrations (None for no binning)
-    :param metadata: metadata attributes (default will use hardcoded WHOI/MVCO values)
-    """
-    c_or_c = get_c_or_c(cs_path, frequency=frequency, what='concentrations')
-
-    c_or_c2netcdf(c_or_c, nc_path, dsxml_path, metadata=metadata)
-
-def list_csdir(cs_dir):
-    """given a directory, list all summary_allTB\d+.mat files"""
-    for fn in os.listdir(cs_dir):
-        if re.match(r'summary_allTB\d+\.mat',fn):
-            yield os.path.join(cs_dir, fn)
-    
-def csdir2netcdf(cs_dir, nc_dir, frequency=None, metadata=IfcbMetadata()):
-    """convert a directory of class summary files to nc files.
-    see cs2netcdf. will write a datasets.xml snippet to the output directory"""
-    for cs_path in list_csdir(cs_dir):
-        fn = os.path.basename(cs_path)
-        nc_fn = re.sub(r'\.mat$','.nc',fn)
-        nc_path = os.path.join(nc_dir, nc_fn)
-        ds_xml = cs2netcdf(cs_path, nc_path, frequency=frequency, metadata=metadata)
-        with open(os.path.join(nc_dir,'dataset.xml'),'w') as fout:
-            fout.write(ds_xml)
+        dataset_xml = generate_datasets_xml(nc_dir, self.metadata, product)
+        return dataset_xml
+    def write_netcdf(self, product, nc_path):
+        attrs = self.metadata.get_attributes()
+        product = product.copy()
+        product['y'] = self.metadata.latitude
+        product['x'] = self.metadata.longitude
+        product['z'] = self.metadata.depth
+        product['t'] = product.index
+        product['station'] = self.metadata.platform_name
+        ds = OrthogonalMultidimensionalTimeseries.from_dataframe(product, nc_path, attributes=attrs)
+        ds.close()
+        ds = nc4.Dataset(nc_path,'a')
+        # now add class labels and thresholds
+        classes = self.classes
+        ds.createDimension('classes', len(classes))
+        class_labels_var = ds.createVariable('class_labels',str,'classes')
+        for i, c in enumerate(classes):
+            class_labels_var[i] = c
+        thresholds = self.thresholds
+        thresholds_var = ds.createVariable('thresholds',float,'classes')
+        for i, claz in enumerate(classes):
+            thresholds_var[i] = thresholds.get(claz,np.nan)
+        ds.close()
