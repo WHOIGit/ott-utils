@@ -2,6 +2,7 @@ import os
 import re
 
 import netCDF4 as nc4
+import numpy as np
 
 from pocean.dsg.timeseries.om import OrthogonalMultidimensionalTimeseries
 
@@ -63,12 +64,11 @@ class IfcbMetadata(object):
             }
         }
 
-def get_c_or_c(cs_path, frequency=None, what='concentrations'):
-    assert what in ['concentrations', 'counts']
-    cs = ClassSummary(cs_path)
-    if what == 'concentrations':
+def get_c_or_c(cs, frequency=None, product='concentrations'):
+    assert product in ['concentrations', 'counts']
+    if product == 'concentrations':
         out = cs.concentrations(frequency=frequency)
-    elif what == 'counts':
+    elif product == 'counts':
         out = cs.counts(frequency=frequency)
     return out
 
@@ -88,7 +88,21 @@ def c_or_c2netcdf(c_or_c, nc_path, dsxml_path=None, metadata=IfcbMetadata()):
     c_or_c['t'] = c_or_c.index
     c_or_c['station'] = metadata.platform_name
     
-    OrthogonalMultidimensionalTimeseries.from_dataframe(c_or_c, nc_path, attributes=attrs)
+    ds = OrthogonalMultidimensionalTimeseries.from_dataframe(c_or_c, nc_path, attributes=attrs)
+    ds.close()
+
+def add_thresholds(cs, nc_path):
+    ds = nc4.Dataset(nc_path, 'a')
+    classes = cs.classes
+    ds.createDimension('classes', len(classes))
+    class_labels_var = ds.createVariable('class_labels',str,'classes')
+    for i, c in enumerate(classes):
+        class_labels_var[i] = c
+    thresholds = cs.thresholds
+    thresholds_var = ds.createVariable('thresholds',float,'classes')
+    for i, claz in enumerate(classes):
+        thresholds_var[i] = thresholds.get(claz,np.nan)
+    ds.close()
 
 def cs2netcdf(cs_path, nc_path, dsxml_path=None, frequency=None, metadata=IfcbMetadata()):
     """Convert a class summary to netcdf
@@ -98,9 +112,13 @@ def cs2netcdf(cs_path, nc_path, dsxml_path=None, frequency=None, metadata=IfcbMe
     :param frequency: binning frequency for concentrations (None for no binning)
     :param metadata: metadata attributes (default will use hardcoded WHOI/MVCO values)
     """
-    c_or_c = get_c_or_c(cs_path, frequency=frequency, what='concentrations')
+    cs = ClassSummary(cs_path)
+
+    c_or_c = get_c_or_c(cs, frequency=frequency, product='concentrations')
 
     c_or_c2netcdf(c_or_c, nc_path, dsxml_path, metadata=metadata)
+
+    add_thresholds(cs, nc_path)
 
 def list_csdir(cs_dir):
     """given a directory, list all summary_allTB\d+.mat files"""

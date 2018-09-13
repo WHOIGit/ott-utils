@@ -33,6 +33,8 @@ if __name__=='__main__':
 
     config_logging()
 
+    logging.info('computing ml_analyzed...')
+    
     dd = DataDirectory(args.data_dir)
 
     if args.previous is not None and os.path.exists(args.previous):
