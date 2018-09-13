@@ -19,7 +19,7 @@
     <att name="creator_type">institution</att>
     <att name="creator_url">https://www.whoi.edu/</att>
     <att name="infoUrl">https://www.whoi.edu/</att>
-    <att name="keywords">ifcb, phytoplankton, plankton, imaging</att>
+    <att name="keywords">ifcb, phytoplankton, plankton, image, classification</att>
     <att name="license">[standard]</att>
     <att name="sourceUrl">(local files)</att>
     <att name="standard_name_vocabulary">CF Standard Name Table v29</att>
@@ -28,6 +28,25 @@
     <att name="summary">{{summary}}</att>
     <att name="title">{{title}}</att>
   </addAttributes>
+  <!-- class labels identify which data variables represent class counts or concentrations -->
+  <dataVariable>
+    <sourceName>class_labels</sourceName>
+    <destinationName>class_labels</destinationName>
+    <dataType>String</dataType>
+    <addAttributes>
+      <att name="ioos_category">Unknown</att>
+    </addAttributes>
+  </dataVariable>
+  <!-- thresholds parameterized how counts were computed -->
+  <dataVariable>
+    <sourceName>thresholds</sourceName>
+    <destinationName>thresholds</destinationName>
+    <dataType>double</dataType>
+    <addAttributes>
+      <att name="ioos_category">Unknown</att>
+    </addAttributes>
+  </dataVariable>
+  <!-- coordinates and associated CF variables -->
   <dataVariable>
     <sourceName>crs</sourceName>
     <destinationName>crs</destinationName>
@@ -92,7 +111,8 @@
       <att name="ioos_category">Location</att>
       <att name="long_name">Z</att>
     </addAttributes>
-  </dataVariable>{% for varname in varnames %}
+  </dataVariable>
+  <!-- class counts or concentrations variables -->{% for varname in varnames %}
   <dataVariable>
     <sourceName>{{varname}}</sourceName>
     <destinationName>{{varname}}</destinationName>

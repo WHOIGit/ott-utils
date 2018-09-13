@@ -5,8 +5,7 @@ import logging
 import yaml
 from munch import munchify
 
-from ott.class_summary import ClassSummary
-from ott.netcdf import IfcbMetadata, get_c_or_c, c_or_c2netcdf, add_thresholds
+from ott.netcdf import IfcbMetadata, ClassSummaryOutput
 from ott.common import config_logging
 
 def load_config(config_file):
@@ -40,12 +39,17 @@ if __name__=='__main__':
         raise ValueError('counts must contain ml_analyzed')
 
     frequency = config.summary.frequency
+    nc_out = args.output
+    dsxml_path = args.dataset
 
-    logging.info('writing summary output to {}'.format(args.output))
-
-    cs = ClassSummary(args.count_summary)
-    c_or_c = get_c_or_c(cs, frequency, product=product)
-    c_or_c2netcdf(c_or_c, args.output, args.dataset, metadata=md)
-    add_thresholds(cs, args.output)
+    cs = ClassSummaryOutput(args.count_summary)
+    logging.info('resampling {} at frequency {}'.format(product, frequency))
+    product = cs.get_product(product, frequency)
+    logging.info('writing summary output to {}'.format(nc_out))
+    cs.write_netcdf(product, nc_out)
+    logging.info('writing {}'.format(dsxml_path))
+    dsxml = cs.get_dsxml(product, nc_out)
+    with open(dsxml_path, 'w') as fout:
+        fout.write(dsxml)
 
     logging.info('done.')
